@@ -7,6 +7,7 @@ import { StatCard } from "@/app/components/ui/StatCard";
 import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
 import { ReceitaDespesaChart } from "@/app/components/dashboard/ReceitaDespesaChart";
+import { MiniCalendar } from "@/app/components/dashboard/MiniCalendar";
 import { QuickLinksEditor } from "@/app/components/dashboard/QuickLinksEditor";
 import { isDashboardModuleKey, DashboardModuleKey } from "@/app/lib/dashboardModules";
 import { ETAPAS } from "@/app/(app)/comercial/constants";
@@ -121,7 +122,7 @@ export default async function Home() {
       <p className="mb-1 text-sm text-muted capitalize">{hoje}</p>
       <PageHeader title={`${saudacao}, ${usuario?.nome.split(" ")[0]}.`} />
 
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard label="Receita do mês" value={<Money value={receita} />} icon={Wallet} tone="success" />
         <StatCard
           label="Lucro do mês"
@@ -130,7 +131,6 @@ export default async function Home() {
           tone={lucro >= 0 ? "success" : "danger"}
         />
         <StatCard label="Despesa do mês" value={<Money value={despesa} />} icon={TrendingDown} tone="danger" />
-        <StatCard label="Projetos ativos" value={projetosAtivos} icon={FolderKanban} />
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -143,6 +143,10 @@ export default async function Home() {
         </div>
 
         <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard label="Projetos ativos" value={projetosAtivos} icon={FolderKanban} />
+            <StatCard label="Clientes ativos" value={clientesAtivos} icon={Users} />
+          </div>
           <div className="card flex flex-1 flex-col">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-muted uppercase">Meta do mês</h2>
@@ -194,7 +198,7 @@ export default async function Home() {
             )}
           </div>
 
-          <StatCard label="Clientes ativos" value={clientesAtivos} icon={Users} />
+          <MiniCalendar />
         </div>
       </div>
 
