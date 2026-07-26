@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { NewPropostaForm } from "./NewPropostaForm";
 import { PropostaStatusSelect } from "./PropostaStatusSelect";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Money } from "@/app/components/ui/Money";
-import { FileText, Paperclip } from "lucide-react";
+import { FileText, Paperclip, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -37,20 +38,22 @@ export default async function PropostasPage() {
         <div className="flex flex-col gap-2">
           {propostas.map((p) => (
             <div key={p.id} className="card flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 font-medium text-foreground">
+              <Link href={`/propostas/${p.id}`} className="group min-w-0 flex-1">
+                <div className="flex items-center gap-2 font-medium text-foreground group-hover:text-accent-hover">
                   {p.titulo}
                   {p.arquivoUrl && (
                     <a
                       href={p.arquivoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                       className="text-muted hover:text-accent-hover"
                       title="Ver anexo"
                     >
                       <Paperclip size={14} />
                     </a>
                   )}
+                  <ArrowRight size={13} className="opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
                 <div className="text-sm text-muted">
                   {p.lead?.empresa.nome ?? p.cliente?.empresa.nome ?? "—"}
@@ -61,7 +64,7 @@ export default async function PropostasPage() {
                     </>
                   )}
                 </div>
-              </div>
+              </Link>
               <PropostaStatusSelect id={p.id} status={p.status} />
             </div>
           ))}

@@ -125,7 +125,7 @@ export function Sidebar({ userName }: { userName: string }) {
   return (
     <>
       {/* Mobile top bar */}
-      <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden print:hidden">
         <span className="font-semibold text-foreground">Avra Produtora LTDA</span>
         <div className="flex items-center gap-4">
           <button onClick={toggle} className="text-foreground">
@@ -138,7 +138,7 @@ export function Sidebar({ userName }: { userName: string }) {
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface md:block">{content}</aside>
+      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface md:block print:hidden">{content}</aside>
 
       {/* Mobile drawer */}
       {mobileOpen && (

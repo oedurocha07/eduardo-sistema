@@ -1,16 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { StatusProposta } from "@/app/generated/prisma/client";
 import { salvarArquivo } from "@/app/lib/storage";
 
+function revalidarProposta(id: string) {
+  revalidatePath("/propostas");
+  revalidatePath(`/propostas/${id}`);
+}
+
 export async function createProposta(formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const alvo = String(formData.get("alvo") ?? "").trim();
-  const valorRaw = String(formData.get("valor") ?? "").trim();
-  const conteudo = String(formData.get("conteudo") ?? "").trim() || null;
-  const arquivo = formData.get("arquivo") as File | null;
 
   if (!titulo) throw new Error("Título é obrigatório");
 
@@ -18,23 +21,95 @@ export async function createProposta(formData: FormData) {
   const leadId = tipoAlvo === "lead" ? idAlvo : null;
   const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
 
-  const arquivoUrl = arquivo && arquivo.size > 0 ? await salvarArquivo(arquivo) : null;
-
-  await prisma.proposta.create({
-    data: {
-      titulo,
-      leadId,
-      clienteId,
-      valor: valorRaw ? Number(valorRaw) : null,
-      conteudo,
-      arquivoUrl,
-    },
+  const proposta = await prisma.proposta.create({
+    data: { titulo, leadId, clienteId },
   });
 
   revalidatePath("/propostas");
+  redirect(`/propostas/${proposta.id}`);
 }
 
 export async function updatePropostaStatus(id: string, status: StatusProposta) {
   await prisma.proposta.update({ where: { id }, data: { status } });
-  revalidatePath("/propostas");
+  revalidarProposta(id);
+}
+
+export async function updatePropostaGeral(id: string, formData: FormData) {
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const alvo = String(formData.get("alvo") ?? "").trim();
+  if (!titulo) throw new Error("Título é obrigatório");
+
+  const [tipoAlvo, idAlvo] = alvo.split(":");
+  const leadId = tipoAlvo === "lead" ? idAlvo : null;
+  const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
+
+  await prisma.proposta.update({ where: { id }, data: { titulo, leadId, clienteId } });
+  revalidarProposta(id);
+}
+
+export async function updatePropostaConceito(id: string, formData: FormData) {
+  const conteudo = String(formData.get("conteudo") ?? "").trim() || null;
+  await prisma.proposta.update({ where: { id }, data: { conteudo } });
+  revalidarProposta(id);
+}
+
+export async function updatePropostaInvestimento(id: string, formData: FormData) {
+  const valorRaw = String(formData.get("valor") ?? "").trim();
+  const validadeRaw = String(formData.get("validade") ?? "").trim();
+  const parcelamentoRaw = String(formData.get("parcelamento") ?? "").trim();
+  const condicoesPagamento = String(formData.get("condicoesPagamento") ?? "").trim() || null;
+  const recorrente = formData.get("recorrente") === "on";
+
+  await prisma.proposta.update({
+    where: { id },
+    data: {
+      valor: valorRaw ? Number(valorRaw) : null,
+      validade: validadeRaw ? new Date(validadeRaw) : null,
+      parcelamento: parcelamentoRaw ? Number(parcelamentoRaw) : null,
+      condicoesPagamento,
+      recorrente,
+    },
+  });
+  revalidarProposta(id);
+}
+
+export async function uploadArquivoProposta(id: string, formData: FormData) {
+  const arquivo = formData.get("arquivo") as File | null;
+  if (!arquivo || arquivo.size === 0) throw new Error("Selecione um arquivo");
+
+  const arquivoUrl = await salvarArquivo(arquivo);
+  await prisma.proposta.update({ where: { id }, data: { arquivoUrl } });
+  revalidarProposta(id);
+}
+
+// ---------- Escopo ----------
+export async function createItemEscopo(propostaId: string, formData: FormData) {
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const detalhe = String(formData.get("detalhe") ?? "").trim() || null;
+  if (!titulo) throw new Error("Título do item é obrigatório");
+
+  const count = await prisma.itemEscopoProposta.count({ where: { propostaId } });
+  await prisma.itemEscopoProposta.create({ data: { propostaId, titulo, detalhe, ordem: count } });
+  revalidarProposta(propostaId);
+}
+
+export async function deleteItemEscopo(id: string, propostaId: string) {
+  await prisma.itemEscopoProposta.delete({ where: { id } });
+  revalidarProposta(propostaId);
+}
+
+// ---------- Cronograma ----------
+export async function createEtapaCronograma(propostaId: string, formData: FormData) {
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const prazo = String(formData.get("prazo") ?? "").trim() || null;
+  if (!titulo) throw new Error("Título da etapa é obrigatório");
+
+  const count = await prisma.etapaCronogramaProposta.count({ where: { propostaId } });
+  await prisma.etapaCronogramaProposta.create({ data: { propostaId, titulo, prazo, ordem: count } });
+  revalidarProposta(propostaId);
+}
+
+export async function deleteEtapaCronograma(id: string, propostaId: string) {
+  await prisma.etapaCronogramaProposta.delete({ where: { id } });
+  revalidarProposta(propostaId);
 }
