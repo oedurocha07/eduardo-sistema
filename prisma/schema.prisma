@@ -1,0 +1,434 @@
+// Schema do sistema interno — ver especificação funcional em
+// avra-produtora/sistema-interno/especificacao-funcional.md (EDUARDO-OS)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PapelUsuario {
+  ADMIN
+  MEMBRO
+}
+
+model Usuario {
+  id             String       @id @default(cuid())
+  nome           String
+  email          String       @unique
+  senhaHash      String
+  papel          PapelUsuario @default(MEMBRO)
+  cargo          String?
+  resetTokenHash String?
+  resetTokenExp  DateTime?
+  createdAt      DateTime     @default(now())
+
+  leadsResponsavel Lead[]
+}
+
+model Empresa {
+  id        String   @id @default(cuid())
+  nome      String
+  cidade    String?
+  segmento  String?
+  createdAt DateTime @default(now())
+
+  contatos Contato[]
+  leads    Lead[]
+  cliente  Cliente?
+}
+
+model Contato {
+  id        String   @id @default(cuid())
+  nome      String
+  cargo     String?
+  email     String?
+  telefone  String?
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+  createdAt DateTime @default(now())
+
+  leads Lead[]
+}
+
+enum EtapaLead {
+  NOVO_LEAD
+  DIAGNOSTICO
+  REUNIAO
+  PROPOSTA_ENVIADA
+  NEGOCIACAO
+  FECHADO
+  PERDIDO
+}
+
+enum Temperatura {
+  FRIO
+  MORNO
+  QUENTE
+}
+
+model Lead {
+  id            String      @id @default(cuid())
+  empresaId     String
+  empresa       Empresa     @relation(fields: [empresaId], references: [id])
+  contatoId     String
+  contato       Contato     @relation(fields: [contatoId], references: [id])
+  valorEstimado Decimal?    @db.Decimal(12, 2)
+  origem        String?
+  responsavelId String?
+  responsavel   Usuario?    @relation(fields: [responsavelId], references: [id])
+  etapa         EtapaLead   @default(NOVO_LEAD)
+  temperatura   Temperatura @default(MORNO)
+  proximaAcao   String?
+  proximaAcaoEm DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  propostas  Proposta[]
+  documentos Documento[]
+  atividades AtividadeLead[]
+}
+
+enum TipoAtividade {
+  NOTA
+  MUDANCA_ETAPA
+  TEMPERATURA
+  PROXIMA_ACAO
+  CRIACAO
+}
+
+model AtividadeLead {
+  id        String        @id @default(cuid())
+  leadId    String
+  lead      Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tipo      TipoAtividade @default(NOTA)
+  descricao String
+  autor     String?
+  createdAt DateTime      @default(now())
+}
+
+// Criado quando um Lead fecha (etapa = FECHADO) — entidade central
+// que conecta Comercial -> Projetos -> Financeiro -> Contratos
+model Cliente {
+  id        String   @id @default(cuid())
+  empresaId String   @unique
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  projetos    Projeto[]
+  lancamentos Lancamento[]
+  documentos  Documento[]
+  propostas   Proposta[]
+  eventos     EventoProducao[]
+}
+
+enum EtapaProducao {
+  BRIEFING
+  PRE_PRODUCAO
+  CAPTACAO
+  EDICAO
+  REVISAO
+  ENTREGA
+  CONCLUIDA
+}
+
+model Projeto {
+  id          String        @id @default(cuid())
+  nome        String
+  clienteId   String
+  cliente     Cliente       @relation(fields: [clienteId], references: [id])
+  status      EtapaProducao @default(BRIEFING)
+  dataEntrega DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  lancamentos Lancamento[]
+  tarefas     Tarefa[]
+}
+
+model Tarefa {
+  id        String    @id @default(cuid())
+  titulo    String
+  projetoId String
+  projeto   Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  concluida Boolean   @default(false)
+  prazo     DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Carteira {
+  id        String   @id @default(cuid())
+  nome      String
+  createdAt DateTime @default(now())
+
+  lancamentos Lancamento[]
+}
+
+enum TipoLancamento {
+  RECEITA
+  DESPESA
+}
+
+enum StatusLancamento {
+  PENDENTE
+  PAGO
+}
+
+model Lancamento {
+  id         String           @id @default(cuid())
+  tipo       TipoLancamento
+  descricao  String
+  categoria  String?
+  valor      Decimal          @db.Decimal(12, 2)
+  vencimento DateTime
+  status     StatusLancamento @default(PENDENTE)
+  carteiraId String
+  carteira   Carteira         @relation(fields: [carteiraId], references: [id])
+  clienteId  String?
+  cliente    Cliente?         @relation(fields: [clienteId], references: [id])
+  projetoId  String?
+  projeto    Projeto?         @relation(fields: [projetoId], references: [id])
+  createdAt  DateTime         @default(now())
+}
+
+enum StatusProposta {
+  RASCUNHO
+  ENVIADA
+  APROVADA
+  RECUSADA
+}
+
+model Proposta {
+  id         String         @id @default(cuid())
+  titulo     String
+  leadId     String?
+  lead       Lead?          @relation(fields: [leadId], references: [id])
+  clienteId  String?
+  cliente    Cliente?       @relation(fields: [clienteId], references: [id])
+  valor      Decimal?       @db.Decimal(12, 2)
+  status     StatusProposta @default(RASCUNHO)
+  conteudo   String?
+  arquivoUrl String?
+  createdAt  DateTime       @default(now())
+}
+
+model Orcamento {
+  id            String   @id @default(cuid())
+  tipo          String
+  descricao     String?
+  custoEstimado Decimal  @db.Decimal(12, 2)
+  precoEstimado Decimal  @db.Decimal(12, 2)
+  lucroEstimado Decimal  @db.Decimal(12, 2)
+  arquivoUrl    String?
+  createdAt     DateTime @default(now())
+}
+
+enum TipoEvento {
+  REUNIAO
+  GRAVACAO
+  EDICAO
+  ENTREGA
+  TAREFA
+  OUTRO
+}
+
+model Evento {
+  id            String     @id @default(cuid())
+  titulo        String
+  tipo          TipoEvento @default(OUTRO)
+  data          DateTime
+  dataFim       DateTime?
+  local         String?
+  participantes String?
+  descricao     String?
+  createdAt     DateTime   @default(now())
+}
+
+model Documento {
+  id         String   @id @default(cuid())
+  clienteId  String?
+  cliente    Cliente? @relation(fields: [clienteId], references: [id])
+  leadId     String?
+  lead       Lead?    @relation(fields: [leadId], references: [id])
+  nome       String
+  descricao  String?
+  arquivoUrl String?
+  createdAt  DateTime @default(now())
+}
+
+// Espelho da base "Faturamento AVRA — Clientes Recorrentes" no Notion.
+// Sincronizado manualmente (o app não tem credencial própria do Notion ainda).
+enum StatusClienteRecorrente {
+  ATIVO
+  PAUSADO
+  ENCERRADO
+}
+
+model ClienteRecorrente {
+  id                     String                  @id @default(cuid())
+  notionId               String?                 @unique
+  nome                   String
+  cnpjCpf                String?
+  email                  String?
+  endereco               String?
+  status                 StatusClienteRecorrente @default(ATIVO)
+  valorMensal            Decimal?                @db.Decimal(12, 2)
+  diaVencimento          Int?
+  descricaoServico       String?
+  descricaoNbs           String?
+  codigoServicoMunicipal String?
+  idClienteAsaas         String?
+  enviarFaturaLocacao    Boolean                 @default(false)
+  observacoes            String?
+  sincronizadoEm         DateTime?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  itensLocados ItemLocado[]
+}
+
+model ItemLocado {
+  id                  String            @id @default(cuid())
+  notionId            String?           @unique
+  clienteRecorrenteId String
+  clienteRecorrente   ClienteRecorrente @relation(fields: [clienteRecorrenteId], references: [id], onDelete: Cascade)
+  item                String
+  quantidade          Int
+  valorUnitario       Decimal           @db.Decimal(12, 2)
+}
+
+// Linha única (singleton) com configurações gerais do dashboard
+model Configuracao {
+  id              String   @id @default(cuid())
+  metaMensal      Decimal? @db.Decimal(12, 2)
+  superMetaMensal Decimal? @db.Decimal(12, 2)
+  atalhos         String[] @default(["comercial", "financeiro", "projetos", "performance"])
+  corDestaque     String?
+  updatedAt       DateTime @updatedAt
+}
+
+// ===== Módulo Eventos (operação de cobertura de eventos ao vivo) =====
+
+enum StatusEvento {
+  PLANEJAMENTO
+  CONFIRMADO
+  AO_VIVO
+  ENCERRADO
+}
+
+enum FaseChecklist {
+  PREPARACAO
+  MONTAGEM
+  OPERACAO
+  ENCERRAMENTO
+}
+
+enum StatusEquipamento {
+  PENDENTE
+  SEPARADO
+  NO_LOCAL
+  DEVOLVIDO
+}
+
+enum TipoCustoEvento {
+  CACHE
+  ADICIONAL
+  EQUIPAMENTO
+  TRANSPORTE
+  OUTRO
+}
+
+model EventoProducao {
+  id         String       @id @default(cuid())
+  nome       String
+  local      String?
+  dataInicio DateTime
+  dataFim    DateTime?
+  status     StatusEvento @default(PLANEJAMENTO)
+  clienteId  String?
+  cliente    Cliente?     @relation(fields: [clienteId], references: [id])
+  descricao  String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  ambientes    AmbienteEvento[]
+  equipe       MembroEquipeEvento[]
+  equipamentos EquipamentoEvento[]
+  checklist    ChecklistItemEvento[]
+  custos       CustoEvento[]
+  referencias  ReferenciaEvento[]
+}
+
+model AmbienteEvento {
+  id       String         @id @default(cuid())
+  eventoId String
+  evento   EventoProducao @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  nome     String
+  cor      String?
+  ordem    Int            @default(0)
+
+  blocos BlocoOperacional[]
+}
+
+model BlocoOperacional {
+  id          String         @id @default(cuid())
+  ambienteId  String
+  ambiente    AmbienteEvento @relation(fields: [ambienteId], references: [id], onDelete: Cascade)
+  titulo      String
+  inicio      DateTime
+  fim         DateTime
+  responsavel String?
+}
+
+model MembroEquipeEvento {
+  id       String         @id @default(cuid())
+  eventoId String
+  evento   EventoProducao @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  nome     String
+  funcao   String
+  dia      DateTime?
+  cache    Decimal?       @db.Decimal(12, 2)
+  contato  String?
+}
+
+model EquipamentoEvento {
+  id          String            @id @default(cuid())
+  eventoId    String
+  evento      EventoProducao    @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  nome        String
+  responsavel String?
+  status      StatusEquipamento @default(PENDENTE)
+  quantidade  Int               @default(1)
+}
+
+model ChecklistItemEvento {
+  id        String         @id @default(cuid())
+  eventoId  String
+  evento    EventoProducao @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  titulo    String
+  fase      FaseChecklist  @default(PREPARACAO)
+  concluido Boolean        @default(false)
+}
+
+model CustoEvento {
+  id        String          @id @default(cuid())
+  eventoId  String
+  evento    EventoProducao  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  descricao String
+  tipo      TipoCustoEvento @default(OUTRO)
+  valor     Decimal         @db.Decimal(12, 2)
+}
+
+model ReferenciaEvento {
+  id         String         @id @default(cuid())
+  eventoId   String
+  evento     EventoProducao @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  titulo     String
+  url        String?
+  arquivoUrl String?
+  createdAt  DateTime       @default(now())
+}

@@ -1,0 +1,49 @@
+name: eduardo-sistema
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+      SESSION_SECRET: ${SESSION_SECRET}
+      SETUP_SECRET: ${SETUP_SECRET}
+      CLIENTES_API_KEY: ${CLIENTES_API_KEY}
+      RESET_SENHA_WEBHOOK_URL: ${RESET_SENHA_WEBHOOK_URL}
+      RESET_SENHA_WEBHOOK_KEY: ${RESET_SENHA_WEBHOOK_KEY}
+      APP_URL: ${APP_URL}
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - internal
+      - n8n_default
+    depends_on:
+      - db
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=n8n_default
+      - traefik.http.routers.eduardo-sistema.rule=Host(`system.oedurocha.com.br`)
+      - traefik.http.routers.eduardo-sistema.entrypoints=websecure
+      - traefik.http.routers.eduardo-sistema.tls.certresolver=mytlschallenge
+      - traefik.http.services.eduardo-sistema.loadbalancer.server.port=3000
+
+networks:
+  internal:
+  n8n_default:
+    external: true
+
+volumes:
+  db_data:
+  uploads_data:
