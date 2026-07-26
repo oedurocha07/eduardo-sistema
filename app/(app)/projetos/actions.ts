@@ -88,6 +88,11 @@ export async function arquivarCliente(id: string, ativo: boolean) {
   revalidatePath("/projetos");
 }
 
+export async function arquivarProjeto(id: string, clienteId: string, arquivado: boolean) {
+  await prisma.projeto.update({ where: { id }, data: { arquivado } });
+  revalidarProjeto(clienteId, id);
+}
+
 // ---------- Entregáveis ----------
 export async function createEntregavel(projetoId: string, clienteId: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();

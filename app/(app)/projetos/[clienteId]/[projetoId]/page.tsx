@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
+import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
 import { TarefasList } from "../TarefasList";
 import { FluxoProducaoStepper } from "./FluxoProducaoStepper";
@@ -9,6 +10,7 @@ import { EntregaveisSection } from "./EntregaveisSection";
 import { MarcosSection } from "./MarcosSection";
 import { EquipeProjetoSection } from "./EquipeProjetoSection";
 import { DetalhesProjetoForm } from "./DetalhesProjetoForm";
+import { ArquivarProjetoButton } from "./ArquivarProjetoButton";
 import { ETAPAS_PRODUCAO } from "../../constants";
 import { ArrowLeft, CalendarClock, Wallet, Users, TrendingUp } from "lucide-react";
 
@@ -47,7 +49,16 @@ export default async function ProjetoDetalhePage({
         Voltar para {projeto.cliente.empresa.nome}
       </Link>
 
-      <PageHeader eyebrow={projeto.cliente.empresa.nome} title={projeto.nome} />
+      <PageHeader
+        eyebrow={projeto.cliente.empresa.nome}
+        title={projeto.nome}
+        action={
+          <div className="flex items-center gap-2">
+            {projeto.arquivado && <Badge tone="neutral">Arquivado</Badge>}
+            <ArquivarProjetoButton id={projeto.id} clienteId={clienteId} arquivado={projeto.arquivado} />
+          </div>
+        }
+      />
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="card">
