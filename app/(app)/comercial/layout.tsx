@@ -1,4 +1,6 @@
 import { SubTabs } from "@/app/components/ui/SubTabs";
+import { LeadPopupProvider } from "./LeadPopupContext";
+import { LeadPopup } from "./LeadPopup";
 
 const TABS = [
   { href: "/comercial", label: "Jornada" },
@@ -11,9 +13,12 @@ const TABS = [
 
 export default function ComercialLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <SubTabs tabs={TABS} />
-      {children}
-    </div>
+    <LeadPopupProvider>
+      <div>
+        <SubTabs tabs={TABS} />
+        {children}
+      </div>
+      <LeadPopup />
+    </LeadPopupProvider>
   );
 }

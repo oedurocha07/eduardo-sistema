@@ -8,7 +8,15 @@ import { updateLeadEtapa } from "@/app/(app)/comercial/actions";
 
 const PASSOS = ETAPAS.filter((et) => et.value !== "PERDIDO");
 
-export function EtapaStepper({ leadId, etapa }: { leadId: string; etapa: EtapaLead }) {
+export function EtapaStepper({
+  leadId,
+  etapa,
+  onChanged,
+}: {
+  leadId: string;
+  etapa: EtapaLead;
+  onChanged?: () => void;
+}) {
   const [isPending, startTransition] = useTransition();
   const indexAtual = PASSOS.findIndex((p) => p.value === etapa);
   const perdido = etapa === "PERDIDO";
@@ -23,7 +31,7 @@ export function EtapaStepper({ leadId, etapa }: { leadId: string; etapa: EtapaLe
             <button
               type="button"
               disabled={isPending}
-              onClick={() => startTransition(() => updateLeadEtapa(leadId, passo.value))}
+              onClick={() => startTransition(async () => { await updateLeadEtapa(leadId, passo.value); onChanged?.(); })}
               className="flex flex-col items-center gap-1.5"
               title={passo.label}
             >

@@ -34,6 +34,7 @@ model Empresa {
   nome      String
   cidade    String?
   segmento  String?
+  arquivada Boolean  @default(false)
   createdAt DateTime @default(now())
 
   contatos Contato[]

@@ -8,10 +8,12 @@ export function ProximaAcaoForm({
   leadId,
   proximaAcao,
   proximaAcaoEm,
+  onChanged,
 }: {
   leadId: string;
   proximaAcao: string | null;
   proximaAcaoEm: Date | null;
+  onChanged?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -24,7 +26,7 @@ export function ProximaAcaoForm({
       <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted uppercase">Próxima ação</h3>
       <form
         ref={formRef}
-        action={(formData) => startTransition(() => updateProximaAcao(leadId, formData))}
+        action={(formData) => startTransition(async () => { await updateProximaAcao(leadId, formData); onChanged?.(); })}
         className="flex flex-col gap-2 sm:flex-row sm:items-center"
       >
         <input

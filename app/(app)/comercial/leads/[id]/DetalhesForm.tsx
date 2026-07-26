@@ -12,6 +12,7 @@ export function DetalhesForm({
   origem,
   responsavelId,
   usuarios,
+  onChanged,
 }: {
   leadId: string;
   empresaNome: string;
@@ -19,12 +20,13 @@ export function DetalhesForm({
   origem: string | null;
   responsavelId: string | null;
   usuarios: Usuario[];
+  onChanged?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
 
   return (
     <form
-      action={(formData) => startTransition(() => updateLeadDetalhes(leadId, formData))}
+      action={(formData) => startTransition(async () => { await updateLeadDetalhes(leadId, formData); onChanged?.(); })}
       className="grid grid-cols-1 gap-3 sm:grid-cols-2"
     >
       <div className="flex flex-col gap-1 sm:col-span-2">

@@ -137,3 +137,63 @@ export async function updateLeadDetalhes(leadId: string, formData: FormData) {
   revalidatePath("/comercial/empresas");
   revalidatePath(`/comercial/leads/${leadId}`);
 }
+
+export async function getLeadResumo(leadId: string) {
+  const [lead, usuarios] = await Promise.all([
+    prisma.lead.findUnique({
+      where: { id: leadId },
+      include: {
+        empresa: true,
+        contato: true,
+        atividades: { orderBy: { createdAt: "desc" }, take: 10 },
+      },
+    }),
+    prisma.usuario.findMany({ orderBy: { nome: "asc" } }),
+  ]);
+
+  if (!lead) return null;
+
+  return {
+    id: lead.id,
+    empresaNome: lead.empresa.nome,
+    contatoNome: lead.contato.nome,
+    contatoCargo: lead.contato.cargo,
+    contatoEmail: lead.contato.email,
+    contatoTelefone: lead.contato.telefone,
+    valorEstimado: lead.valorEstimado ? lead.valorEstimado.toString() : null,
+    origem: lead.origem,
+    responsavelId: lead.responsavelId,
+    etapa: lead.etapa,
+    temperatura: lead.temperatura,
+    proximaAcao: lead.proximaAcao,
+    proximaAcaoEm: lead.proximaAcaoEm,
+    atividades: lead.atividades.map((a) => ({
+      id: a.id,
+      tipo: a.tipo,
+      descricao: a.descricao,
+      autor: a.autor,
+      createdAtISO: a.createdAt.toISOString(),
+    })),
+    usuarios: usuarios.map((u) => ({ id: u.id, nome: u.nome })),
+  };
+}
+
+export async function arquivarEmpresa(id: string, arquivada: boolean) {
+  await prisma.empresa.update({ where: { id }, data: { arquivada } });
+  revalidatePath("/comercial/empresas");
+}
+
+export async function updateContato(id: string, formData: FormData) {
+  const nome = String(formData.get("nome") ?? "").trim();
+  const cargo = String(formData.get("cargo") ?? "").trim() || null;
+  const email = String(formData.get("email") ?? "").trim() || null;
+  const telefone = String(formData.get("telefone") ?? "").trim() || null;
+
+  if (!nome) throw new Error("Nome é obrigatório");
+
+  await prisma.contato.update({ where: { id }, data: { nome, cargo, email, telefone } });
+
+  revalidatePath("/comercial/contatos");
+  revalidatePath("/comercial");
+  revalidatePath("/comercial/leads");
+}

@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { EditContatoButton } from "./EditContatoButton";
 import { Contact } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function ContatosPage() {
                 <th className="px-4 py-3 font-medium">Cargo</th>
                 <th className="px-4 py-3 font-medium">E-mail</th>
                 <th className="px-4 py-3 font-medium">Telefone</th>
+                <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -41,6 +43,11 @@ export default async function ContatosPage() {
                   <td className="px-4 py-3 text-muted">{contato.cargo ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{contato.email ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{contato.telefone ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <EditContatoButton
+                      contato={{ id: contato.id, nome: contato.nome, cargo: contato.cargo, email: contato.email, telefone: contato.telefone }}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

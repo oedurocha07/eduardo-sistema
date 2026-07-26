@@ -1,8 +1,8 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
 import { updateLeadEtapa } from "./actions";
+import { useLeadPopup } from "./LeadPopupContext";
 import { EtapaLead } from "@/app/generated/prisma/client";
 import { ETAPAS } from "./constants";
 import { Money } from "@/app/components/ui/Money";
@@ -26,12 +26,13 @@ type LeadCardProps = {
 
 export function LeadCard({ id, empresaNome, contatoNome, valorEstimado, temperatura, etapa, proximaAcao }: LeadCardProps) {
   const [isPending, startTransition] = useTransition();
+  const { abrirLead } = useLeadPopup();
   const temp = TEMPERATURA_ICON[temperatura];
   const TempIcon = temp.icon;
 
   return (
     <div className="card gap-0 p-3 shadow-sm transition-colors hover:border-accent/50">
-      <Link href={`/comercial/leads/${id}`} className="block">
+      <button type="button" onClick={() => abrirLead(id)} className="block w-full text-left">
         <div className="mb-2 flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="truncate font-medium text-foreground">{empresaNome}</div>
@@ -48,7 +49,7 @@ export function LeadCard({ id, empresaNome, contatoNome, valorEstimado, temperat
             Sem próxima ação
           </div>
         )}
-      </Link>
+      </button>
       <select
         value={etapa}
         disabled={isPending}

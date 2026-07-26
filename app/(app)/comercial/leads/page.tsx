@@ -2,8 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 import { ETAPAS } from "../constants";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
-import { Badge } from "@/app/components/ui/Badge";
-import { Money } from "@/app/components/ui/Money";
+import { LeadRow } from "./LeadRow";
 import { Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -47,19 +46,18 @@ export default async function LeadsPage() {
             </thead>
             <tbody>
               {leads.map((lead) => (
-                <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                  <td className="px-4 py-3 font-medium text-foreground">{lead.empresa.nome}</td>
-                  <td className="px-4 py-3 text-muted">{lead.contato.nome}</td>
-                  <td className="px-4 py-3">
-                    <Badge tone={ETAPA_TONE[lead.etapa]}>{ETAPA_LABEL[lead.etapa]}</Badge>
-                  </td>
-                  <td className="px-4 py-3 text-muted">
-                    {lead.valorEstimado ? <Money value={Number(lead.valorEstimado)} /> : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted">{lead.responsavel?.nome ?? "—"}</td>
-                  <td className="px-4 py-3 text-muted">{lead.temperatura}</td>
-                  <td className="px-4 py-3 text-muted">{lead.proximaAcao ?? "—"}</td>
-                </tr>
+                <LeadRow
+                  key={lead.id}
+                  id={lead.id}
+                  empresaNome={lead.empresa.nome}
+                  contatoNome={lead.contato.nome}
+                  etapaLabel={ETAPA_LABEL[lead.etapa]}
+                  etapaTone={ETAPA_TONE[lead.etapa]}
+                  valorEstimado={lead.valorEstimado ? Number(lead.valorEstimado) : null}
+                  responsavelNome={lead.responsavel?.nome ?? null}
+                  temperatura={lead.temperatura}
+                  proximaAcao={lead.proximaAcao}
+                />
               ))}
             </tbody>
           </table>

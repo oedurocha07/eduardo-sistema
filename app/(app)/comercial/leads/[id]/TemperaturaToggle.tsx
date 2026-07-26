@@ -11,7 +11,15 @@ const OPCOES: { value: Temperatura; label: string; icon: typeof Flame; color: st
   { value: "QUENTE", label: "Quente", icon: Flame, color: "text-danger" },
 ];
 
-export function TemperaturaToggle({ leadId, temperatura }: { leadId: string; temperatura: Temperatura }) {
+export function TemperaturaToggle({
+  leadId,
+  temperatura,
+  onChanged,
+}: {
+  leadId: string;
+  temperatura: Temperatura;
+  onChanged?: () => void;
+}) {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -24,7 +32,7 @@ export function TemperaturaToggle({ leadId, temperatura }: { leadId: string; tem
             key={op.value}
             type="button"
             disabled={isPending}
-            onClick={() => startTransition(() => updateLeadTemperatura(leadId, op.value))}
+            onClick={() => startTransition(async () => { await updateLeadTemperatura(leadId, op.value); onChanged?.(); })}
             className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               ativo ? "bg-surface-hover text-foreground" : "text-muted hover:text-foreground"
             }`}
