@@ -221,7 +221,7 @@ model Lancamento {
   categoria      String?
   valor          Decimal          @db.Decimal(12, 2)
   vencimento     DateTime
-  status         StatusLancamento @default(PENDENTE)
+  status         StatusLancamento @default(PAGO)
   formaPagamento String?
   comprovanteUrl String?
   carteiraId     String
