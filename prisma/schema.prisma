@@ -120,12 +120,13 @@ model Cliente {
   ativo     Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  projetos    Projeto[]
-  lancamentos Lancamento[]
-  documentos  Documento[]
-  propostas   Proposta[]
-  orcamentos  Orcamento[]
-  eventos     EventoProducao[]
+  projetos     Projeto[]
+  lancamentos  Lancamento[]
+  documentos   Documento[]
+  propostas    Proposta[]
+  orcamentos   Orcamento[]
+  eventos      EventoProducao[]
+  cofreCliente CofreCliente?
 }
 
 enum EtapaProducao {
@@ -346,15 +347,48 @@ model Evento {
 }
 
 model Documento {
-  id         String   @id @default(cuid())
-  clienteId  String?
-  cliente    Cliente? @relation(fields: [clienteId], references: [id])
-  leadId     String?
-  lead       Lead?    @relation(fields: [leadId], references: [id])
-  nome       String
-  descricao  String?
-  arquivoUrl String?
-  createdAt  DateTime @default(now())
+  id             String        @id @default(cuid())
+  clienteId      String?
+  cliente        Cliente?      @relation(fields: [clienteId], references: [id])
+  leadId         String?
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  cofreClienteId String?
+  cofreCliente   CofreCliente? @relation(fields: [cofreClienteId], references: [id], onDelete: Cascade)
+  nome           String
+  descricao      String?
+  arquivoUrl     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum TipoPessoaCofre {
+  FISICA
+  JURIDICA
+}
+
+// Cofre do cliente: dados de identidade/fiscais usados na hora de gerar e assinar
+// contratos. Pode ficar vinculado a um Cliente do CRM (auto-preenchimento) ou existir
+// sozinho, pra alvo avulso que ainda nao esta cadastrado como Cliente.
+model CofreCliente {
+  id           String          @id @default(cuid())
+  tipo         TipoPessoaCofre @default(JURIDICA)
+  nomeCompleto String
+  apelido      String?
+  cpfCnpj      String?
+  responsavel  String?
+  email        String?
+  telefone     String?
+  endereco     String?
+  cidade       String?
+  estado       String?
+  cep          String?
+  observacoes  String?
+  clienteId    String?         @unique
+  cliente      Cliente?        @relation(fields: [clienteId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  documentos Documento[]
 }
 
 // Espelho da base "Faturamento AVRA — Clientes Recorrentes" no Notion.

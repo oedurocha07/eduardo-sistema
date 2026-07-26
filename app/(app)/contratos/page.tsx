@@ -1,62 +1,49 @@
+import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
-import { NewDocumentoForm } from "./NewDocumentoForm";
+import { NewCofreForm } from "./NewCofreForm";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
-import { Shield, FileText, Paperclip } from "lucide-react";
+import { Badge } from "@/app/components/ui/Badge";
+import { Shield } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function ContratosPage() {
-  const [documentos, leads, clientes] = await Promise.all([
-    prisma.documento.findMany({
-      include: { cliente: { include: { empresa: true } }, lead: { include: { empresa: true } } },
+  const [cofres, clientes] = await Promise.all([
+    prisma.cofreCliente.findMany({
+      include: { documentos: { orderBy: { createdAt: "desc" } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
-    prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    prisma.cliente.findMany({
+      where: { ativo: true, cofreCliente: null },
+      include: { empresa: true },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   return (
     <div className="p-6 md:p-8">
       <PageHeader
         title="Contratos"
-        subtitle="Contratos e documentos vinculados a leads ou clientes."
-        action={
-          <NewDocumentoForm
-            leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
-            clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}
-          />
-        }
+        subtitle="Cada cliente guarda seus dados e contratos num cofre."
+        action={<NewCofreForm clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))} />}
       />
 
-      {documentos.length === 0 ? (
-        <EmptyState icon={Shield} title="Nenhum contrato cadastrado ainda" />
+      {cofres.length === 0 ? (
+        <EmptyState icon={Shield} title="Nenhum cofre cadastrado ainda" description="Clique em “Novo cofre” para começar." />
       ) : (
-        <div className="flex flex-col gap-2">
-          {documentos.map((doc) => (
-            <div key={doc.id} className="card flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 font-medium text-foreground">
-                  <FileText size={14} className="text-accent" />
-                  {doc.nome}
-                  {doc.arquivoUrl && (
-                    <a
-                      href={doc.arquivoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted hover:text-accent-hover"
-                      title="Ver anexo"
-                    >
-                      <Paperclip size={14} />
-                    </a>
-                  )}
-                </div>
-                <div className="text-sm text-muted">
-                  {doc.lead?.empresa.nome ?? doc.cliente?.empresa.nome ?? "—"}
-                  {doc.descricao && <> · {doc.descricao}</>}
-                </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {cofres.map((cofre) => (
+            <Link key={cofre.id} href={`/contratos/${cofre.id}`} className="card hover:border-accent/50">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="font-medium text-foreground">{cofre.apelido || cofre.nomeCompleto}</span>
+                <Badge tone="neutral">{cofre.tipo === "FISICA" ? "PF" : "PJ"}</Badge>
               </div>
-            </div>
+              <div className="text-sm text-muted">
+                {cofre.documentos.length} contrato(s)
+                {cofre.documentos[0] && <> · Último: {cofre.documentos[0].createdAt.toLocaleDateString("pt-BR")}</>}
+              </div>
+            </Link>
           ))}
         </div>
       )}
