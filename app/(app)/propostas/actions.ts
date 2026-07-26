@@ -34,6 +34,12 @@ export async function updatePropostaStatus(id: string, status: StatusProposta) {
   revalidarProposta(id);
 }
 
+export async function deleteProposta(id: string) {
+  await prisma.proposta.delete({ where: { id } });
+  revalidatePath("/propostas");
+  redirect("/propostas");
+}
+
 export async function updatePropostaGeral(id: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const alvo = String(formData.get("alvo") ?? "").trim();

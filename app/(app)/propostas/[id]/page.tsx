@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { PropostaStatusSelect } from "../PropostaStatusSelect";
+import { DeletePropostaButton } from "../DeletePropostaButton";
 import { PropostaTabs } from "./PropostaTabs";
 import { GeralForm } from "./GeralForm";
 import { AnexoPropostaForm } from "./AnexoPropostaForm";
@@ -116,7 +117,12 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
         <PageHeader
           eyebrow={numero}
           title={proposta.titulo}
-          action={<PropostaStatusSelect id={proposta.id} status={proposta.status} />}
+          action={
+            <div className="flex items-center gap-2">
+              <PropostaStatusSelect id={proposta.id} status={proposta.status} />
+              <DeletePropostaButton id={proposta.id} titulo={proposta.titulo} />
+            </div>
+          }
         />
       </div>
 
