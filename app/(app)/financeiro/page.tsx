@@ -3,15 +3,38 @@ import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StatCard } from "@/app/components/ui/StatCard";
 import { Money } from "@/app/components/ui/Money";
-import { ArrowUpCircle, ArrowDownCircle, Wallet, Percent, CalendarClock } from "lucide-react";
+import { proximoRef } from "@/app/(app)/agenda/dateUtils";
+import { ArrowUpCircle, ArrowDownCircle, Wallet, Percent, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function FinanceiroPage() {
+export default async function FinanceiroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string }>;
+}) {
+  const { mes } = await searchParams;
   const now = new Date();
-  const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
-  const fimMes = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const mesParam = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  let ref = now;
+  if (mes && /^\d{4}-\d{2}$/.test(mes)) {
+    const [ano, mesNum] = mes.split("-").map(Number);
+    ref = new Date(ano, mesNum - 1, 1);
+  }
+
+  const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
+  const mesParam = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, "0")}`;
+
+  const mesAnteriorParam = (() => {
+    const anterior = proximoRef("mes", ref, -1);
+    return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const mesSeguinteParam = (() => {
+    const seguinte = proximoRef("mes", ref, 1);
+    return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
 
   const [lancamentosMes, vencimentosPendentes] = await Promise.all([
     prisma.lancamento.findMany({
@@ -51,11 +74,30 @@ export default async function FinanceiroPage() {
   const totalDespesas = Object.values(despesasPorCategoria).reduce((s, v) => s + v, 0);
   const categoriasOrdenadas = Object.entries(despesasPorCategoria).sort((a, b) => b[1] - a[1]);
 
-  const mesLabel = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
   return (
     <div className="p-6 md:p-8">
-      <PageHeader eyebrow="Financeiro" title="Controle Financeiro" subtitle={mesLabel} />
+      <PageHeader
+        eyebrow="Financeiro"
+        title="Controle Financeiro"
+        action={
+          <div className="flex items-center gap-1">
+            <Link href={`/financeiro?mes=${mesAnteriorParam}`} className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground">
+              <ChevronLeft size={16} />
+            </Link>
+            <span className="min-w-32 text-center text-sm font-medium text-foreground capitalize">{mesLabel}</span>
+            <Link href={`/financeiro?mes=${mesSeguinteParam}`} className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground">
+              <ChevronRight size={16} />
+            </Link>
+            {!estaNoMesAtual && (
+              <Link href="/financeiro" className="ml-2 text-xs text-accent-hover hover:underline">
+                Hoje
+              </Link>
+            )}
+          </div>
+        }
+      />
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Link href={`/financeiro/lancamentos?tipo=RECEITA&status=PAGO&mes=${mesParam}`} className="block">
