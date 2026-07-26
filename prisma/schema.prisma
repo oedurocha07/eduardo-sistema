@@ -137,17 +137,52 @@ enum EtapaProducao {
 }
 
 model Projeto {
-  id          String        @id @default(cuid())
-  nome        String
-  clienteId   String
-  cliente     Cliente       @relation(fields: [clienteId], references: [id])
-  status      EtapaProducao @default(BRIEFING)
-  dataEntrega DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  nome             String
+  clienteId        String
+  cliente          Cliente       @relation(fields: [clienteId], references: [id])
+  status           EtapaProducao @default(BRIEFING)
+  dataEntrega      DateTime?
+  valor            Decimal?      @db.Decimal(12, 2)
+  briefing         String?
+  areaClienteNotas String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   lancamentos Lancamento[]
   tarefas     Tarefa[]
+  entregaveis EntregavelProjeto[]
+  marcos      MarcoProjeto[]
+  equipe      MembroEquipeProjeto[]
+}
+
+model EntregavelProjeto {
+  id        String   @id @default(cuid())
+  projetoId String
+  projeto   Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  titulo    String
+  entregue  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model MarcoProjeto {
+  id        String    @id @default(cuid())
+  projetoId String
+  projeto   Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  titulo    String
+  data      DateTime?
+  concluido Boolean   @default(false)
+  createdAt DateTime  @default(now())
+}
+
+model MembroEquipeProjeto {
+  id        String   @id @default(cuid())
+  projetoId String
+  projeto   Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  nome      String
+  funcao    String
+  cache     Decimal? @db.Decimal(12, 2)
+  contato   String?
 }
 
 model Tarefa {

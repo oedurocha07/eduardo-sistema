@@ -8,7 +8,7 @@ import { Badge } from "@/app/components/ui/Badge";
 import { NewProjetoForm } from "../NewProjetoForm";
 import { ProjetoStatusSelect } from "../ProjetoStatusSelect";
 import { TarefasList } from "./TarefasList";
-import { ArrowLeft, FolderKanban, FileText, Shield, Wallet, Paperclip } from "lucide-react";
+import { ArrowLeft, ArrowRight, FolderKanban, FileText, Shield, Wallet, Paperclip } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -58,12 +58,13 @@ export default async function ClienteWorkspacePage({
               {cliente.projetos.map((p) => (
                 <div key={p.id} className="card">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-medium text-foreground">{p.nome}</div>
-                      {p.dataEntrega && (
-                        <div className="text-xs text-muted">Entrega: {p.dataEntrega.toLocaleDateString("pt-BR")}</div>
-                      )}
-                    </div>
+                    <Link
+                      href={`/projetos/${clienteId}/${p.id}`}
+                      className="group flex items-center gap-1.5 font-medium text-foreground hover:text-accent-hover"
+                    >
+                      {p.nome}
+                      <ArrowRight size={13} className="opacity-0 transition-opacity group-hover:opacity-100" />
+                    </Link>
                     <ProjetoStatusSelect id={p.id} status={p.status} />
                   </div>
                   <TarefasList projetoId={p.id} tarefas={p.tarefas} />
