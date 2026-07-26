@@ -14,11 +14,52 @@ function parseStr(v: FormDataEntryValue | null): string | null {
   return s || null;
 }
 
+type ItemLocadoInput = { id?: string; item: string; quantidade: number; valorUnitario: number };
+
+// Só mexe nos itens locados quando o formulário enviou a lista (checkbox "Enviar fatura de
+// locação" marcada) — se a checkbox estiver desmarcada os itens salvos ficam intactos, só ocultos.
+async function reconciliarItensLocados(clienteRecorrenteId: string, itensJson: string) {
+  let itens: ItemLocadoInput[] = [];
+  try {
+    itens = JSON.parse(itensJson);
+  } catch {
+    itens = [];
+  }
+  itens = itens.filter((i) => i.item && i.item.trim());
+
+  const existentes = await prisma.itemLocado.findMany({ where: { clienteRecorrenteId } });
+  const idsEnviados = new Set(itens.filter((i) => i.id).map((i) => i.id));
+  const paraRemover = existentes.filter((e) => !idsEnviados.has(e.id));
+
+  await prisma.$transaction([
+    ...paraRemover.map((e) => prisma.itemLocado.delete({ where: { id: e.id } })),
+    ...itens.map((i) =>
+      i.id
+        ? prisma.itemLocado.update({
+            where: { id: i.id },
+            data: {
+              item: i.item.trim(),
+              quantidade: i.quantidade || 1,
+              valorUnitario: i.valorUnitario || 0,
+            },
+          })
+        : prisma.itemLocado.create({
+            data: {
+              clienteRecorrenteId,
+              item: i.item.trim(),
+              quantidade: i.quantidade || 1,
+              valorUnitario: i.valorUnitario || 0,
+            },
+          })
+    ),
+  ]);
+}
+
 export async function createCliente(formData: FormData) {
   const nome = parseStr(formData.get("nome"));
   if (!nome) throw new Error("Nome é obrigatório");
 
-  await prisma.clienteRecorrente.create({
+  const cliente = await prisma.clienteRecorrente.create({
     data: {
       nome,
       cnpjCpf: parseStr(formData.get("cnpjCpf")),
@@ -35,6 +76,11 @@ export async function createCliente(formData: FormData) {
       observacoes: parseStr(formData.get("observacoes")),
     },
   });
+
+  const itensJson = formData.get("itensLocadosJson");
+  if (typeof itensJson === "string") {
+    await reconciliarItensLocados(cliente.id, itensJson);
+  }
 
   revalidatePath("/clientes");
 }
@@ -63,6 +109,11 @@ export async function updateCliente(formData: FormData) {
     },
   });
 
+  const itensJson = formData.get("itensLocadosJson");
+  if (typeof itensJson === "string") {
+    await reconciliarItensLocados(id, itensJson);
+  }
+
   revalidatePath("/clientes");
 }
 
@@ -73,24 +124,5 @@ export async function setStatus(id: string, status: StatusClienteRecorrente) {
 
 export async function deleteCliente(id: string) {
   await prisma.clienteRecorrente.delete({ where: { id } });
-  revalidatePath("/clientes");
-}
-
-export async function addItemLocado(formData: FormData) {
-  const clienteRecorrenteId = String(formData.get("clienteRecorrenteId"));
-  const item = parseStr(formData.get("item"));
-  const quantidade = parseNum(formData.get("quantidade")) ?? 1;
-  const valorUnitario = parseNum(formData.get("valorUnitario")) ?? 0;
-  if (!item) throw new Error("Nome do item é obrigatório");
-
-  await prisma.itemLocado.create({
-    data: { clienteRecorrenteId, item, quantidade, valorUnitario },
-  });
-
-  revalidatePath("/clientes");
-}
-
-export async function deleteItemLocado(id: string) {
-  await prisma.itemLocado.delete({ where: { id } });
   revalidatePath("/clientes");
 }

@@ -1,23 +1,16 @@
 "use client";
 
 import { useState, useRef, useTransition } from "react";
-import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
-import { updateCliente, setStatus, deleteCliente, addItemLocado, deleteItemLocado } from "./actions";
+import { updateCliente, setStatus, deleteCliente } from "./actions";
 import { ClienteFormFields } from "./ClienteFormFields";
 import { StatusClienteRecorrente } from "@/app/generated/prisma/client";
-import { Pencil, Trash2, X, Plus } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
   ATIVO: "success",
   PAUSADO: "warning",
   ENCERRADO: "neutral",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  ATIVO: "Ativo",
-  PAUSADO: "Pausado",
-  ENCERRADO: "Encerrado",
 };
 
 type ItemLocado = { id: string; item: string; quantidade: number; valorUnitario: number };
@@ -42,10 +35,8 @@ type Cliente = {
 
 export function ClienteCard({ cliente }: { cliente: Cliente }) {
   const [editOpen, setEditOpen] = useState(false);
-  const [itemFormOpen, setItemFormOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const editFormRef = useRef<HTMLFormElement>(null);
-  const itemFormRef = useRef<HTMLFormElement>(null);
 
   const totalItens = cliente.itensLocados.reduce((s, i) => s + i.quantidade * i.valorUnitario, 0);
 
@@ -115,59 +106,16 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
         </div>
         <div>
           <div className="text-xs text-muted">Fatura de locação (60/40)</div>
-          <div className="text-foreground">{cliente.enviarFaturaLocacao ? "Sim" : "Não"}</div>
+          <div className="text-foreground">
+            {cliente.enviarFaturaLocacao
+              ? `Sim${cliente.itensLocados.length > 0 ? ` · ${cliente.itensLocados.length} item(ns) · ` : ""}`
+              : "Não"}
+            {cliente.enviarFaturaLocacao && cliente.itensLocados.length > 0 && <Money value={totalItens} />}
+          </div>
         </div>
       </div>
 
       {cliente.descricaoServico && <p className="mt-3 text-sm text-muted">{cliente.descricaoServico}</p>}
-
-      <div className="mt-3 border-t border-border pt-3">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs font-medium text-muted uppercase">
-            Itens locados
-            {cliente.itensLocados.length > 0 && (
-              <>
-                {" · "}
-                <Money value={totalItens} />
-              </>
-            )}
-          </span>
-          <button onClick={() => setItemFormOpen((v) => !v)} className="text-xs text-accent-hover hover:underline">
-            + item
-          </button>
-        </div>
-        {cliente.itensLocados.length > 0 && (
-          <ul className="flex flex-wrap gap-2 text-xs">
-            {cliente.itensLocados.map((item) => (
-              <li key={item.id} className="flex items-center gap-1.5 rounded-full bg-surface-hover px-2.5 py-1 text-muted">
-                {item.item} · <Money value={item.valorUnitario} />
-                <button onClick={() => startTransition(() => deleteItemLocado(item.id))} className="hover:text-danger">
-                  <X size={12} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {itemFormOpen && (
-          <form
-            ref={itemFormRef}
-            action={async (formData) => {
-              await addItemLocado(formData);
-              itemFormRef.current?.reset();
-              setItemFormOpen(false);
-            }}
-            className="mt-2 flex flex-wrap gap-2"
-          >
-            <input type="hidden" name="clienteRecorrenteId" value={cliente.id} />
-            <input name="item" placeholder="Item *" required className="input w-40" />
-            <input name="quantidade" type="number" defaultValue={1} className="input w-20" />
-            <input name="valorUnitario" type="number" step="0.01" placeholder="Valor" className="input w-28" />
-            <button type="submit" className="btn-primary px-3 py-1.5 text-xs">
-              <Plus size={14} />
-            </button>
-          </form>
-        )}
-      </div>
 
       {cliente.observacoes && (
         <p className="mt-3 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">{cliente.observacoes}</p>
