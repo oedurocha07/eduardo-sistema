@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/app/lib/prisma";
+import { salvarArquivo } from "@/app/lib/storage";
 import { hashPassword, verifyPassword } from "@/app/lib/auth";
 import { PapelUsuario } from "@/app/generated/prisma/client";
 
@@ -79,6 +80,24 @@ export async function updateCorDestaque(corDestaque: string) {
     await prisma.configuracao.update({ where: { id: existente.id }, data: { corDestaque } });
   } else {
     await prisma.configuracao.create({ data: { corDestaque } });
+  }
+
+  revalidatePath("/", "layout");
+}
+
+export async function updateProdutora(formData: FormData) {
+  const nomeProdutora = String(formData.get("nomeProdutora") ?? "").trim() || null;
+  const logo = formData.get("logo") as File | null;
+
+  const existente = await prisma.configuracao.findFirst();
+  const logoUrl = logo && logo.size > 0 ? await salvarArquivo(logo) : existente?.logoUrl ?? null;
+
+  const data = { nomeProdutora, logoUrl };
+
+  if (existente) {
+    await prisma.configuracao.update({ where: { id: existente.id }, data });
+  } else {
+    await prisma.configuracao.create({ data });
   }
 
   revalidatePath("/", "layout");

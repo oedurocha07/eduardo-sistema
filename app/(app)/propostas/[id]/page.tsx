@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
+import { getConfiguracao } from "@/app/lib/configuracao";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { PropostaStatusSelect } from "../PropostaStatusSelect";
 import { DeletePropostaButton } from "../DeletePropostaButton";
@@ -19,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function PropostaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [proposta, leads, clientes] = await Promise.all([
+  const [proposta, leads, clientes, config] = await Promise.all([
     prisma.proposta.findUnique({
       where: { id },
       include: {
@@ -31,6 +32,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     }),
     prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
     prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    getConfiguracao(),
   ]);
 
   if (!proposta) notFound();
@@ -92,6 +94,8 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
         <ResultadoPreview
           titulo={proposta.titulo}
           clienteNome={clienteNome}
+          nomeProdutora={config.nomeProdutora ?? "Avra Produtora LTDA"}
+          logoUrl={config.logoUrl}
           conteudo={proposta.conteudo}
           itensEscopo={proposta.itensEscopo}
           etapas={proposta.etapas}

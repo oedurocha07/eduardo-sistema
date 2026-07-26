@@ -9,6 +9,8 @@ type Etapa = { id: string; titulo: string; prazo: string | null };
 export function ResultadoPreview({
   titulo,
   clienteNome,
+  nomeProdutora,
+  logoUrl,
   conteudo,
   itensEscopo,
   etapas,
@@ -21,6 +23,8 @@ export function ResultadoPreview({
 }: {
   titulo: string;
   clienteNome: string | null;
+  nomeProdutora: string;
+  logoUrl: string | null;
   conteudo: string | null;
   itensEscopo: Item[];
   etapas: Etapa[];
@@ -43,10 +47,15 @@ export function ResultadoPreview({
       <div className="card mx-auto max-w-3xl gap-8 p-10 print:border-none print:p-0 print:shadow-none">
         <div className="flex items-center justify-between border-b border-border pb-6">
           <div className="flex items-center gap-3">
-            <AvraLogo className="h-8 w-8 text-accent" />
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={nomeProdutora} className="h-8 w-8 object-contain" />
+            ) : (
+              <AvraLogo className="h-8 w-8 text-accent" />
+            )}
             <div>
               <div className="text-xs tracking-wide text-muted uppercase">Proposta comercial</div>
-              <div className="text-sm font-semibold text-foreground">AVRA Produtora</div>
+              <div className="text-sm font-semibold text-foreground">{nomeProdutora}</div>
             </div>
           </div>
           <div className="text-right text-xs text-muted">
@@ -113,7 +122,7 @@ export function ResultadoPreview({
         )}
 
         <div className="border-t border-border pt-4 text-center text-xs text-muted">
-          Proposta preparada pela AVRA Produtora.
+          Proposta preparada pela {nomeProdutora}.
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import { getConfiguracao } from "@/app/lib/configuracao";
 import { updateNome, updateMetas } from "./actions";
+import { ProdutoraForm } from "./ProdutoraForm";
 import { NewMembroForm } from "./NewMembroForm";
 import { AlterarSenhaForm } from "./AlterarSenhaForm";
 import { BrandKitPicker } from "./BrandKitPicker";
@@ -24,6 +25,12 @@ export default async function ConfiguracoesPage() {
   return (
     <div className="p-6 md:p-8">
       <PageHeader title="Configurações" />
+
+      <section className="card mb-8 max-w-md">
+        <h2 className="mb-1 font-semibold text-foreground">Produtora</h2>
+        <p className="mb-3 text-sm text-muted">Nome e ícone exibidos no login e no menu lateral.</p>
+        <ProdutoraForm nomeProdutora={config.nomeProdutora ?? "Avra Produtora LTDA"} logoUrl={config.logoUrl} />
+      </section>
 
       <section className="card mb-8 max-w-md">
         <h2 className="mb-3 font-semibold text-foreground">Meu Perfil</h2>

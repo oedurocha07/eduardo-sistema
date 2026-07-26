@@ -14,10 +14,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Avra Produtora LTDA",
-  description: "Sistema interno de gestão",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const nomeProdutora = await getConfiguracao()
+    .then((c) => c.nomeProdutora ?? "Avra Produtora LTDA")
+    .catch(() => "Avra Produtora LTDA");
+
+  return {
+    title: nomeProdutora,
+    description: "Sistema interno de gestão",
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -40,7 +40,15 @@ const NAV_ITEMS = [
   { href: "/contratos", label: "Contratos", icon: Shield },
 ];
 
-export function Sidebar({ userName }: { userName: string }) {
+export function Sidebar({
+  userName,
+  nomeProdutora,
+  logoUrl,
+}: {
+  userName: string;
+  nomeProdutora: string;
+  logoUrl: string | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,8 +65,13 @@ export function Sidebar({ userName }: { userName: string }) {
   const content = (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 py-5">
-        <AvraLogo className="h-6 w-9 shrink-0" />
-        <span className="text-sm leading-tight font-semibold text-foreground">Avra Produtora LTDA</span>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt={nomeProdutora} className="h-6 w-9 shrink-0 object-contain" />
+        ) : (
+          <AvraLogo className="h-6 w-9 shrink-0" />
+        )}
+        <span className="text-sm leading-tight font-semibold text-foreground">{nomeProdutora}</span>
       </div>
 
       <NovoMenu />
@@ -126,7 +139,7 @@ export function Sidebar({ userName }: { userName: string }) {
     <>
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden print:hidden">
-        <span className="font-semibold text-foreground">Avra Produtora LTDA</span>
+        <span className="font-semibold text-foreground">{nomeProdutora}</span>
         <div className="flex items-center gap-4">
           <button onClick={toggle} className="text-foreground">
             {hidden ? <EyeOff size={20} /> : <Eye size={20} />}
