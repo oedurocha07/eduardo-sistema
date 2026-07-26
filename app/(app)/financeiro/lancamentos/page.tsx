@@ -1,24 +1,27 @@
 import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { NewLancamentoForm } from "./NewLancamentoForm";
-import { MarcarPagoButton } from "./MarcarPagoButton";
+import { EditLancamentoButton } from "./EditLancamentoButton";
+import { DeleteLancamentoButton } from "./DeleteLancamentoButton";
+import { MarcarPagoButton, DesfazerPagamentoButton } from "./MarcarPagoButton";
+import { FiltroLancamentos } from "./FiltroLancamentos";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
-import { Receipt, X } from "lucide-react";
+import { Receipt, X, Paperclip } from "lucide-react";
 import { TipoLancamento, StatusLancamento, Prisma } from "@/app/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = { tipo?: string; status?: string; mes?: string };
+type SearchParams = { tipo?: string; status?: string; mes?: string; bucket?: string };
 
 export default async function LancamentosPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { tipo, status, mes } = await searchParams;
+  const { tipo, status, mes, bucket } = await searchParams;
 
   const where: Prisma.LancamentoWhereInput = {};
   if (tipo === "RECEITA" || tipo === "DESPESA") where.tipo = tipo as TipoLancamento;
@@ -29,26 +32,53 @@ export default async function LancamentosPage({
     const fim = new Date(ano, mesNum, 1);
     where.vencimento = { gte: inicio, lt: fim };
   }
+  if (bucket === "atrasados" || bucket === "hoje" || bucket === "7dias") {
+    where.status = "PENDENTE";
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    if (bucket === "atrasados") {
+      where.vencimento = { lt: hoje };
+    } else if (bucket === "hoje") {
+      const amanha = new Date(hoje);
+      amanha.setDate(amanha.getDate() + 1);
+      where.vencimento = { gte: hoje, lt: amanha };
+    } else {
+      const em7dias = new Date(hoje);
+      em7dias.setDate(em7dias.getDate() + 7);
+      where.vencimento = { gte: hoje, lte: em7dias };
+    }
+  }
 
-  const lancamentos = await prisma.lancamento.findMany({
-    where,
-    include: { cliente: { include: { empresa: true } }, projeto: true },
-    orderBy: { vencimento: "desc" },
-  });
+  const [lancamentos, clientesRaw, projetosRaw] = await Promise.all([
+    prisma.lancamento.findMany({
+      where,
+      include: { cliente: { include: { empresa: true } }, projeto: true },
+      orderBy: { vencimento: "desc" },
+    }),
+    prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true } }),
+    prisma.projeto.findMany({ select: { id: true, nome: true, clienteId: true } }),
+  ]);
 
-  const filtrosAtivos = Boolean(tipo || status || mes);
+  const clientes = clientesRaw.map((c) => ({ id: c.id, nome: c.empresa.nome }));
+  const projetos = projetosRaw;
+
+  const filtrosAtivos = Boolean(tipo || status || mes || bucket);
 
   const LABELS: Record<string, string> = {
     RECEITA: "Receita",
     DESPESA: "Despesa",
     PAGO: "Pago",
     PENDENTE: "Pendente",
+    atrasados: "Atrasados",
+    hoje: "Vence hoje",
+    "7dias": "Próximos 7 dias",
   };
 
   return (
     <div className="p-6 md:p-8">
       <PageHeader title="Lançamentos" />
-      <NewLancamentoForm />
+      <NewLancamentoForm clientes={clientes} projetos={projetos} />
+      <FiltroLancamentos />
 
       {filtrosAtivos && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
@@ -56,6 +86,7 @@ export default async function LancamentosPage({
           {tipo && <Badge tone="neutral">{LABELS[tipo] ?? tipo}</Badge>}
           {status && <Badge tone="neutral">{LABELS[status] ?? status}</Badge>}
           {mes && <Badge tone="neutral">{mes}</Badge>}
+          {bucket && <Badge tone="neutral">{LABELS[bucket] ?? bucket}</Badge>}
           <Link href="/financeiro/lancamentos" className="flex items-center gap-1 text-xs text-muted hover:text-foreground">
             <X size={12} /> limpar
           </Link>
@@ -73,6 +104,7 @@ export default async function LancamentosPage({
                 <th className="px-4 py-3 font-medium">Categoria</th>
                 <th className="px-4 py-3 font-medium">Cliente/Projeto</th>
                 <th className="px-4 py-3 font-medium">Vencimento</th>
+                <th className="px-4 py-3 font-medium">Pagamento</th>
                 <th className="px-4 py-3 font-medium">Valor</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Ações</th>
@@ -85,6 +117,22 @@ export default async function LancamentosPage({
                   <td className="px-4 py-3 text-muted">{l.categoria ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{l.projeto?.nome ?? l.cliente?.empresa.nome ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{l.vencimento.toLocaleDateString("pt-BR")}</td>
+                  <td className="px-4 py-3 text-muted">
+                    <div className="flex items-center gap-1.5">
+                      <span>{l.formaPagamento ?? "—"}</span>
+                      {l.comprovanteUrl && (
+                        <a
+                          href={l.comprovanteUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Ver comprovante"
+                          className="text-muted hover:text-foreground"
+                        >
+                          <Paperclip size={12} />
+                        </a>
+                      )}
+                    </div>
+                  </td>
                   <td className={`px-4 py-3 font-medium ${l.tipo === "RECEITA" ? "text-success" : "text-danger"}`}>
                     <Money value={Number(l.valor)} sign={l.tipo === "RECEITA" ? "+" : "-"} />
                   </td>
@@ -93,7 +141,28 @@ export default async function LancamentosPage({
                       {l.status === "PAGO" ? "Pago" : "Pendente"}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3">{l.status === "PENDENTE" && <MarcarPagoButton id={l.id} />}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {l.status === "PENDENTE" ? <MarcarPagoButton id={l.id} /> : <DesfazerPagamentoButton id={l.id} />}
+                      <EditLancamentoButton
+                        clientes={clientes}
+                        projetos={projetos}
+                        lancamento={{
+                          id: l.id,
+                          tipo: l.tipo,
+                          descricao: l.descricao,
+                          categoria: l.categoria,
+                          valor: Number(l.valor),
+                          vencimento: l.vencimento,
+                          clienteId: l.clienteId,
+                          projetoId: l.projetoId,
+                          formaPagamento: l.formaPagamento,
+                          comprovanteUrl: l.comprovanteUrl,
+                        }}
+                      />
+                      <DeleteLancamentoButton id={l.id} descricao={l.descricao} />
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
