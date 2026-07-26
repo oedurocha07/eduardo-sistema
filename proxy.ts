@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/api/setup",
   "/api/clientes-recorrentes/import",
   "/api/v1/clientes-recorrentes",
+  "/api/v1/lancamentos",
 ];
 
 export function proxy(request: NextRequest) {

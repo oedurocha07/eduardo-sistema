@@ -219,22 +219,26 @@ enum StatusLancamento {
 }
 
 model Lancamento {
-  id             String           @id @default(cuid())
-  tipo           TipoLancamento
-  descricao      String
-  categoria      String?
-  valor          Decimal          @db.Decimal(12, 2)
-  vencimento     DateTime
-  status         StatusLancamento @default(PAGO)
-  formaPagamento String?
-  comprovanteUrl String?
-  carteiraId     String
-  carteira       Carteira         @relation(fields: [carteiraId], references: [id])
-  clienteId      String?
-  cliente        Cliente?         @relation(fields: [clienteId], references: [id])
-  projetoId      String?
-  projeto        Projeto?         @relation(fields: [projetoId], references: [id])
-  createdAt      DateTime         @default(now())
+  id                  String             @id @default(cuid())
+  tipo                TipoLancamento
+  descricao           String
+  categoria           String?
+  valor               Decimal            @db.Decimal(12, 2)
+  vencimento          DateTime
+  status              StatusLancamento   @default(PAGO)
+  formaPagamento      String?
+  comprovanteUrl      String?
+  carteiraId          String
+  carteira            Carteira           @relation(fields: [carteiraId], references: [id])
+  clienteId           String?
+  cliente             Cliente?           @relation(fields: [clienteId], references: [id])
+  clienteRecorrenteId String?
+  clienteRecorrente   ClienteRecorrente? @relation(fields: [clienteRecorrenteId], references: [id])
+  projetoId           String?
+  projeto             Projeto?           @relation(fields: [projetoId], references: [id])
+  asaasPaymentId      String?            @unique
+  origemIntegracao    String?
+  createdAt           DateTime           @default(now())
 }
 
 enum StatusProposta {
@@ -421,6 +425,7 @@ model ClienteRecorrente {
   updatedAt              DateTime                @updatedAt
 
   itensLocados ItemLocado[]
+  lancamentos  Lancamento[]
 }
 
 model ItemLocado {
