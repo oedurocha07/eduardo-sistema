@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createEvento } from "./actions";
+import { EventoFormFields } from "./EventoFormFields";
 import { Plus, X } from "lucide-react";
 
 export function NewEventoForm({
@@ -49,30 +50,7 @@ export function NewEventoForm({
               }}
               className="flex flex-col gap-3"
             >
-              <input name="titulo" placeholder="Título *" required className="input" />
-              <div className="grid grid-cols-2 gap-2">
-                <select name="tipo" defaultValue="OUTRO" className="input">
-                  <option value="REUNIAO">Reunião</option>
-                  <option value="GRAVACAO">Gravação</option>
-                  <option value="EDICAO">Edição</option>
-                  <option value="ENTREGA">Entrega</option>
-                  <option value="TAREFA">Tarefa</option>
-                  <option value="OUTRO">Outro</option>
-                </select>
-                <input name="local" placeholder="Local / link" className="input" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-muted">Início</label>
-                  <input name="data" type="datetime-local" required defaultValue={defaultData} className="input" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-muted">Fim</label>
-                  <input name="dataFim" type="datetime-local" className="input" />
-                </div>
-              </div>
-              <input name="participantes" placeholder="Participantes (separe por vírgula)" className="input" />
-              <input name="descricao" placeholder="Descrição" className="input" />
+              <EventoFormFields defaults={{ data: defaultData }} />
               <div className="mt-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
                   Cancelar

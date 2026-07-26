@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { NewEventoForm } from "./NewEventoForm";
+import { EditEventoButton } from "./EditEventoButton";
+import { DeleteEventoButton } from "./DeleteEventoButton";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, MapPin, Users } from "lucide-react";
@@ -135,10 +137,13 @@ export default async function AgendaPage({
                 <div className="flex flex-col gap-1.5">
                   {doDia.length === 0 && <p className="text-xs text-muted">—</p>}
                   {doDia.map((e) => (
-                    <div key={e.id} className="rounded-lg bg-surface-hover px-2 py-1.5 text-xs">
+                    <div key={e.id} className="group rounded-lg bg-surface-hover px-2 py-1.5 text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIPO_DOT[e.tipo]}`} />
-                        <span className="truncate text-foreground">{e.titulo}</span>
+                        <span className="truncate flex-1 text-foreground">{e.titulo}</span>
+                        <span className="opacity-0 transition-opacity group-hover:opacity-100">
+                          <DeleteEventoButton id={e.id} titulo={e.titulo} />
+                        </span>
                       </div>
                       <span className="text-muted">{e.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
@@ -200,10 +205,14 @@ function EventoCard({
           <span className={`h-2 w-2 rounded-full ${TIPO_DOT[evento.tipo]}`} />
           <span className="font-medium text-foreground">{evento.titulo}</span>
         </div>
-        <span className="text-xs text-muted">
-          {evento.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-          {evento.dataFim && ` — ${evento.dataFim.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted">
+            {evento.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            {evento.dataFim && ` — ${evento.dataFim.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+          </span>
+          <EditEventoButton evento={evento} />
+          <DeleteEventoButton id={evento.id} titulo={evento.titulo} />
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
         <span className="rounded-full bg-surface-hover px-2 py-0.5">{TIPO_LABEL[evento.tipo]}</span>

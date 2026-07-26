@@ -29,3 +29,35 @@ export async function createEvento(formData: FormData) {
 
   revalidatePath("/agenda");
 }
+
+export async function updateEvento(id: string, formData: FormData) {
+  const titulo = String(formData.get("titulo") ?? "").trim();
+  const tipo = String(formData.get("tipo") ?? "OUTRO") as TipoEvento;
+  const dataRaw = String(formData.get("data") ?? "").trim();
+  const dataFimRaw = String(formData.get("dataFim") ?? "").trim();
+  const local = String(formData.get("local") ?? "").trim() || null;
+  const participantes = String(formData.get("participantes") ?? "").trim() || null;
+  const descricao = String(formData.get("descricao") ?? "").trim() || null;
+
+  if (!titulo || !dataRaw) throw new Error("Título e data são obrigatórios");
+
+  await prisma.evento.update({
+    where: { id },
+    data: {
+      titulo,
+      tipo,
+      data: new Date(dataRaw),
+      dataFim: dataFimRaw ? new Date(dataFimRaw) : null,
+      local,
+      participantes,
+      descricao,
+    },
+  });
+
+  revalidatePath("/agenda");
+}
+
+export async function deleteEvento(id: string) {
+  await prisma.evento.delete({ where: { id } });
+  revalidatePath("/agenda");
+}
