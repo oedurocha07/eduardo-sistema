@@ -23,7 +23,9 @@ function valorAposLabel(linhas: string[], labels: string[], apartirDe = 0, ateAn
   const label = labels.find((l) => linhas[idx].toUpperCase().includes(l))!;
   const restoMesmaLinha = linhas[idx].toUpperCase().indexOf(label) + label.length;
   const sobra = linhas[idx].slice(restoMesmaLinha).replace(/^[:\-–]+/, "").trim();
-  if (sobra) return limparEspacos(sobra);
+  // Ignora sobra entre parênteses (ex: "TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)")
+  // — é parte do rótulo, não um valor inline.
+  if (sobra && !/^\(.*\)$/.test(sobra)) return limparEspacos(sobra);
 
   for (let i = idx + 1; i < ateAntes; i++) {
     if (linhas[i].trim()) return limparEspacos(linhas[i]);
@@ -45,7 +47,10 @@ export async function extrairDadosCartaoCnpj(buffer: Buffer): Promise<DadosCarta
   const cnpjMatch = texto.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/);
   const cnpj = cnpjMatch ? cnpjMatch[0] : null;
 
-  const nomeFantasia = valorAposLabel(linhas, ["TÍTULO DO ESTABELECIMENTO", "TITULO DO ESTABELECIMENTO"]);
+  // Nome fantasia costuma vir mascarado com asteriscos quando não está registrado —
+  // nesse caso ignora e usa a razão social, que é sempre preenchida.
+  const nomeFantasiaBruto = valorAposLabel(linhas, ["TÍTULO DO ESTABELECIMENTO", "TITULO DO ESTABELECIMENTO"]);
+  const nomeFantasia = nomeFantasiaBruto && !/^\*+$/.test(nomeFantasiaBruto) ? nomeFantasiaBruto : null;
   const razaoSocial = valorAposLabel(linhas, ["NOME EMPRESARIAL"]);
   const nome = nomeFantasia || razaoSocial;
 
