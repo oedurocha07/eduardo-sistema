@@ -13,6 +13,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       include: {
         lead: { include: { empresa: true } },
         cliente: { include: { empresa: true } },
+        clienteRecorrente: true,
         itensEscopo: { orderBy: { ordem: "asc" } },
         etapas: { orderBy: { ordem: "asc" } },
       },
@@ -22,7 +23,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   if (!proposta) notFound();
 
-  const clienteNome = proposta.lead?.empresa.nome ?? proposta.cliente?.empresa.nome ?? null;
+  const clienteNome =
+    proposta.clienteRecorrente?.nome ?? proposta.cliente?.empresa.nome ?? proposta.lead?.empresa.nome ?? proposta.nomeEmpresa ?? null;
   const numero = `PROP-${proposta.createdAt.getFullYear()}-${proposta.id.slice(0, 4).toUpperCase()}`;
 
   const corpo = buildPropostaHtml({

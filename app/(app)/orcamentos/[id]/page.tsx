@@ -55,24 +55,29 @@ const CHAVES_EXTRAS = [
 export default async function OrcamentoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [orcamento, leads, clientes, catalogo] = await Promise.all([
+  const [orcamento, clientesRecorrentes, clientesFreela, catalogo] = await Promise.all([
     prisma.orcamento.findUnique({
       where: { id },
       include: {
         lead: { include: { empresa: true } },
         cliente: { include: { empresa: true } },
+        clienteRecorrente: true,
         itens: { orderBy: { ordem: "asc" } },
       },
     }),
-    prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    prisma.clienteRecorrente.findMany({ where: { status: { not: "ENCERRADO" } }, orderBy: { nome: "asc" } }),
     prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
     prisma.itemCatalogo.findMany({ orderBy: { ordem: "asc" } }),
   ]);
 
   if (!orcamento) notFound();
 
-  const alvoAtual = orcamento.leadId ? `lead:${orcamento.leadId}` : orcamento.clienteId ? `cliente:${orcamento.clienteId}` : "";
-  const clienteNome = orcamento.lead?.empresa.nome ?? orcamento.cliente?.empresa.nome ?? null;
+  const alvoAtual = orcamento.clienteRecorrenteId
+    ? `clienteRecorrente:${orcamento.clienteRecorrenteId}`
+    : orcamento.clienteId
+      ? `cliente:${orcamento.clienteId}`
+      : "";
+  const clienteNome = orcamento.clienteRecorrente?.nome ?? orcamento.cliente?.empresa.nome ?? orcamento.lead?.empresa.nome ?? null;
   const custoOperacional = orcamento.itens.reduce((s, i) => s + Number(i.custoUnitario) * i.quantidade, 0);
   const margemPercentual = Number(orcamento.margemPercentual);
   const margemFrac = margemPercentual / 100;
@@ -155,8 +160,8 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
           orcamentoId={orcamento.id}
           nome={orcamento.nome}
           alvoAtual={alvoAtual}
-          leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
-          clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}
+          clientesRecorrentes={clientesRecorrentes.map((c) => ({ id: c.id, label: c.nome }))}
+          clientesFreela={clientesFreela.map((c) => ({ id: c.id, label: c.empresa.nome }))}
           dataPrevista={orcamento.dataPrevista}
           responsavel={orcamento.responsavel}
         />

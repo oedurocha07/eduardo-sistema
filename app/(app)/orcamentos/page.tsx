@@ -23,7 +23,7 @@ export default async function OrcamentosPage() {
   const [orcamentos, templates, catalogo] = await Promise.all([
     prisma.orcamento.findMany({
       where: { isTemplate: false },
-      include: { lead: { include: { empresa: true } }, cliente: { include: { empresa: true } }, itens: true },
+      include: { clienteRecorrente: true, cliente: { include: { empresa: true } }, itens: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.orcamento.findMany({
@@ -120,7 +120,7 @@ export default async function OrcamentosPage() {
                 </div>
                 <div className="text-sm text-muted">
                   {o.categoria}
-                  {(o.lead?.empresa.nome ?? o.cliente?.empresa.nome) && <> · {o.lead?.empresa.nome ?? o.cliente?.empresa.nome}</>}
+                  {(o.clienteRecorrente?.nome ?? o.cliente?.empresa.nome) && <> · {o.clienteRecorrente?.nome ?? o.cliente?.empresa.nome}</>}
                 </div>
               </div>
               <div className="shrink-0 text-right">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { salvarArquivo } from "@/app/lib/storage";
+import { parseClienteAlvo } from "@/app/lib/clienteAlvo";
 
 function revalidarOrcamento(id?: string) {
   revalidatePath("/orcamentos");
@@ -29,16 +30,15 @@ export async function updateOrcamentoDetalhes(id: string, formData: FormData) {
   const responsavel = String(formData.get("responsavel") ?? "").trim() || null;
   if (!nome) throw new Error("Nome é obrigatório");
 
-  const [tipoAlvo, idAlvo] = alvo.split(":");
-  const leadId = tipoAlvo === "lead" ? idAlvo : null;
-  const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
+  const { clienteId, clienteRecorrenteId } = parseClienteAlvo(alvo);
 
   await prisma.orcamento.update({
     where: { id },
     data: {
       nome,
-      leadId,
+      leadId: null,
       clienteId,
+      clienteRecorrenteId,
       dataPrevista: dataPrevistaRaw ? new Date(dataPrevistaRaw) : null,
       responsavel,
     },
@@ -128,8 +128,8 @@ export async function duplicarOrcamento(id: string) {
     data: {
       nome: `${original.nome} (cópia)`,
       categoria: original.categoria,
-      leadId: original.leadId,
       clienteId: original.clienteId,
+      clienteRecorrenteId: original.clienteRecorrenteId,
       margemPercentual: original.margemPercentual,
       mostrarDetalhado: original.mostrarDetalhado,
       itens: {
@@ -176,8 +176,8 @@ export async function gerarPropostaDoOrcamento(id: string) {
   const proposta = await prisma.proposta.create({
     data: {
       titulo: orcamento.nome,
-      leadId: orcamento.leadId,
       clienteId: orcamento.clienteId,
+      clienteRecorrenteId: orcamento.clienteRecorrenteId,
       valor: precoSugerido,
       itensEscopo: {
         create: orcamento.itens.map((i, idx) => ({

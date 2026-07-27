@@ -132,6 +132,19 @@ export async function setStatus(id: string, status: StatusClienteRecorrente) {
 }
 
 export async function deleteCliente(id: string) {
+  const cliente = await prisma.clienteRecorrente.findUnique({
+    where: { id },
+    include: { _count: { select: { lancamentos: true, propostas: true, orcamentos: true } } },
+  });
+  if (!cliente) return;
+
+  const total = Object.values(cliente._count).reduce((s, n) => s + n, 0);
+  if (total > 0) {
+    throw new Error(
+      "Não é possível excluir: esse cliente tem lançamentos financeiros, propostas ou orçamentos vinculados.",
+    );
+  }
+
   await prisma.clienteRecorrente.delete({ where: { id } });
   revalidatePath("/clientes");
 }

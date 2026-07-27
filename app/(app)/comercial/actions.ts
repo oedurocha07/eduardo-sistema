@@ -323,7 +323,7 @@ export async function deleteEmpresa(id: string) {
     }),
     prisma.clienteRecorrente.findUnique({
       where: { empresaId: id },
-      include: { _count: { select: { lancamentos: true } } },
+      include: { _count: { select: { lancamentos: true, propostas: true, orcamentos: true } } },
     }),
   ]);
 
@@ -336,8 +336,11 @@ export async function deleteEmpresa(id: string) {
       throw new Error("Não é possível excluir: essa empresa já é cliente com projetos, financeiro, propostas ou documentos vinculados.");
     }
   }
-  if (clienteRecorrente && clienteRecorrente._count.lancamentos > 0) {
-    throw new Error("Não é possível excluir: essa empresa tem lançamentos financeiros vinculados na Base de Clientes.");
+  if (clienteRecorrente) {
+    const totalCobranca = Object.values(clienteRecorrente._count).reduce((s, n) => s + n, 0);
+    if (totalCobranca > 0) {
+      throw new Error("Não é possível excluir: essa empresa tem lançamentos, propostas ou orçamentos vinculados na Base de Clientes.");
+    }
   }
 
   await prisma.contato.deleteMany({ where: { empresaId: id } });

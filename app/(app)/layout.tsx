@@ -11,8 +11,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const usuario = await getCurrentUser();
   if (!usuario) redirect("/login");
 
-  const [leads, clientes, projetos, config] = await Promise.all([
-    prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+  const [clientesRecorrentes, clientes, projetos, config] = await Promise.all([
+    prisma.clienteRecorrente.findMany({ where: { status: { not: "ENCERRADO" } }, orderBy: { nome: "asc" } }),
     prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
     prisma.projeto.findMany({ select: { id: true, nome: true, clienteId: true } }),
     getConfiguracao(),
@@ -26,7 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         </div>
         <QuickCreateModals
-          leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
+          clientesRecorrentes={clientesRecorrentes.map((c) => ({ id: c.id, label: c.nome }))}
           clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}
           projetos={projetos}
         />

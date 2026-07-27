@@ -2,17 +2,18 @@
 
 import { useState, useRef } from "react";
 import { createProposta } from "./actions";
+import { ClienteSelect } from "@/app/components/comercial/ClienteSelect";
 import { Plus, X } from "lucide-react";
 
 type Opcao = { id: string; label: string };
 
 export function NewPropostaForm({
-  leads,
-  clientes,
+  clientesRecorrentes,
+  clientesFreela,
   controlled,
 }: {
-  leads: Opcao[];
-  clientes: Opcao[];
+  clientesRecorrentes: Opcao[];
+  clientesFreela: Opcao[];
   controlled?: { open: boolean; onClose: () => void };
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -45,27 +46,7 @@ export function NewPropostaForm({
             </p>
             <form ref={formRef} action={createProposta} className="flex flex-col gap-3">
               <input name="titulo" placeholder="Nome do projeto *" required className="input" />
-              <select name="alvo" className="input">
-                <option value="">Lead / Cliente (opcional)</option>
-                {leads.length > 0 && (
-                  <optgroup label="Leads">
-                    {leads.map((l) => (
-                      <option key={l.id} value={`lead:${l.id}`}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-                {clientes.length > 0 && (
-                  <optgroup label="Clientes">
-                    {clientes.map((c) => (
-                      <option key={c.id} value={`cliente:${c.id}`}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
+              <ClienteSelect clientesRecorrentes={clientesRecorrentes} clientesFreela={clientesFreela} />
               <div className="mt-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
                   Cancelar

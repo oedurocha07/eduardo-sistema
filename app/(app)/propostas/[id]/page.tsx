@@ -18,25 +18,31 @@ export const dynamic = "force-dynamic";
 export default async function PropostaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [proposta, leads, clientes, config] = await Promise.all([
+  const [proposta, clientesRecorrentes, clientesFreela, config] = await Promise.all([
     prisma.proposta.findUnique({
       where: { id },
       include: {
         lead: { include: { empresa: true } },
         cliente: { include: { empresa: true } },
+        clienteRecorrente: true,
         itensEscopo: { orderBy: { ordem: "asc" } },
         etapas: { orderBy: { ordem: "asc" } },
       },
     }),
-    prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    prisma.clienteRecorrente.findMany({ where: { status: { not: "ENCERRADO" } }, orderBy: { nome: "asc" } }),
     prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
     getConfiguracao(),
   ]);
 
   if (!proposta) notFound();
 
-  const alvoAtual = proposta.leadId ? `lead:${proposta.leadId}` : proposta.clienteId ? `cliente:${proposta.clienteId}` : "";
-  const clienteNome = proposta.lead?.empresa.nome ?? proposta.cliente?.empresa.nome ?? null;
+  const alvoAtual = proposta.clienteRecorrenteId
+    ? `clienteRecorrente:${proposta.clienteRecorrenteId}`
+    : proposta.clienteId
+      ? `cliente:${proposta.clienteId}`
+      : "";
+  const clienteNome =
+    proposta.clienteRecorrente?.nome ?? proposta.cliente?.empresa.nome ?? proposta.lead?.empresa.nome ?? proposta.nomeEmpresa ?? null;
   const numero = `PROP-${proposta.createdAt.getFullYear()}-${proposta.id.slice(0, 4).toUpperCase()}`;
 
   const abas = [
@@ -45,17 +51,15 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
       label: "Geral",
       completo:
         Boolean(proposta.titulo.trim()) &&
-        Boolean(proposta.leadId || proposta.clienteId || proposta.nomeEmpresa?.trim() || proposta.nomeCliente?.trim()),
+        Boolean(proposta.clienteRecorrenteId || proposta.clienteId || proposta.nomeEmpresa?.trim()),
       content: (
         <div className="flex flex-col gap-6">
           <GeralForm
             propostaId={proposta.id}
             titulo={proposta.titulo}
-            nomeEmpresa={proposta.nomeEmpresa ?? ""}
-            nomeCliente={proposta.nomeCliente ?? ""}
             alvoAtual={alvoAtual}
-            leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
-            clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}
+            clientesRecorrentes={clientesRecorrentes.map((c) => ({ id: c.id, label: c.nome }))}
+            clientesFreela={clientesFreela.map((c) => ({ id: c.id, label: c.empresa.nome }))}
           />
           <AnexoPropostaForm propostaId={proposta.id} arquivoUrl={proposta.arquivoUrl} />
         </div>

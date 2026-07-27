@@ -10,12 +10,12 @@ import { FileText, Paperclip, ArrowRight } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function PropostasPage() {
-  const [propostas, leads, clientes] = await Promise.all([
+  const [propostas, clientesRecorrentes, clientesFreela] = await Promise.all([
     prisma.proposta.findMany({
-      include: { lead: { include: { empresa: true } }, cliente: { include: { empresa: true } } },
+      include: { clienteRecorrente: true, cliente: { include: { empresa: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.lead.findMany({ include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    prisma.clienteRecorrente.findMany({ where: { status: { not: "ENCERRADO" } }, orderBy: { nome: "asc" } }),
     prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
   ]);
 
@@ -26,8 +26,8 @@ export default async function PropostasPage() {
         subtitle="Crie, publique e acompanhe propostas comerciais."
         action={
           <NewPropostaForm
-            leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
-            clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}
+            clientesRecorrentes={clientesRecorrentes.map((c) => ({ id: c.id, label: c.nome }))}
+            clientesFreela={clientesFreela.map((c) => ({ id: c.id, label: c.empresa.nome }))}
           />
         }
       />
@@ -59,7 +59,7 @@ export default async function PropostasPage() {
                     )}
                   </div>
                   <div className="truncate text-sm text-muted">
-                    {p.lead?.empresa.nome ?? p.cliente?.empresa.nome ?? "—"}
+                    {p.clienteRecorrente?.nome ?? p.cliente?.empresa.nome ?? "—"}
                     {p.valor && (
                       <>
                         {" · "}

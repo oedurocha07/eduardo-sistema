@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { updateOrcamentoDetalhes } from "../actions";
+import { ClienteSelect } from "@/app/components/comercial/ClienteSelect";
 
 type Opcao = { id: string; label: string };
 
@@ -9,16 +10,16 @@ export function DetalhesOrcamentoForm({
   orcamentoId,
   nome,
   alvoAtual,
-  leads,
-  clientes,
+  clientesRecorrentes,
+  clientesFreela,
   dataPrevista,
   responsavel,
 }: {
   orcamentoId: string;
   nome: string;
   alvoAtual: string;
-  leads: Opcao[];
-  clientes: Opcao[];
+  clientesRecorrentes: Opcao[];
+  clientesFreela: Opcao[];
   dataPrevista: Date | null;
   responsavel: string | null;
 }) {
@@ -32,27 +33,7 @@ export function DetalhesOrcamentoForm({
     >
       <div className="flex min-w-48 flex-1 flex-col gap-1">
         <label className="text-xs text-muted">Cliente</label>
-        <select name="alvo" defaultValue={alvoAtual} className="input">
-          <option value="">Sem vínculo</option>
-          {leads.length > 0 && (
-            <optgroup label="Leads">
-              {leads.map((l) => (
-                <option key={l.id} value={`lead:${l.id}`}>
-                  {l.label}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          {clientes.length > 0 && (
-            <optgroup label="Clientes">
-              {clientes.map((c) => (
-                <option key={c.id} value={`cliente:${c.id}`}>
-                  {c.label}
-                </option>
-              ))}
-            </optgroup>
-          )}
-        </select>
+        <ClienteSelect defaultValue={alvoAtual} clientesRecorrentes={clientesRecorrentes} clientesFreela={clientesFreela} />
       </div>
       <div className="flex min-w-48 flex-1 flex-col gap-1">
         <label className="text-xs text-muted">Nome do projeto</label>

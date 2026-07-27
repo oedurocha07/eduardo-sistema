@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { StatusProposta } from "@/app/generated/prisma/client";
 import { salvarArquivo } from "@/app/lib/storage";
+import { parseClienteAlvo } from "@/app/lib/clienteAlvo";
 
 function revalidarProposta(id: string) {
   revalidatePath("/propostas");
@@ -17,12 +18,10 @@ export async function createProposta(formData: FormData) {
 
   if (!titulo) throw new Error("Título é obrigatório");
 
-  const [tipoAlvo, idAlvo] = alvo.split(":");
-  const leadId = tipoAlvo === "lead" ? idAlvo : null;
-  const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
+  const { clienteId, clienteRecorrenteId } = parseClienteAlvo(alvo);
 
   const proposta = await prisma.proposta.create({
-    data: { titulo, leadId, clienteId },
+    data: { titulo, clienteId, clienteRecorrenteId },
   });
 
   revalidatePath("/propostas");
@@ -42,16 +41,12 @@ export async function deleteProposta(id: string) {
 
 export async function updatePropostaGeral(id: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
-  const nomeEmpresa = String(formData.get("nomeEmpresa") ?? "").trim() || null;
-  const nomeCliente = String(formData.get("nomeCliente") ?? "").trim() || null;
   const alvo = String(formData.get("alvo") ?? "").trim();
   if (!titulo) throw new Error("Título é obrigatório");
 
-  const [tipoAlvo, idAlvo] = alvo.split(":");
-  const leadId = tipoAlvo === "lead" ? idAlvo : null;
-  const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
+  const { clienteId, clienteRecorrenteId } = parseClienteAlvo(alvo);
 
-  await prisma.proposta.update({ where: { id }, data: { titulo, nomeEmpresa, nomeCliente, leadId, clienteId } });
+  await prisma.proposta.update({ where: { id }, data: { titulo, clienteId, clienteRecorrenteId, leadId: null } });
   revalidarProposta(id);
 }
 

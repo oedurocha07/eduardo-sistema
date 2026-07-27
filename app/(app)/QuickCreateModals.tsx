@@ -11,11 +11,11 @@ type Opcao = { id: string; label: string };
 type Projeto = { id: string; nome: string; clienteId: string };
 
 export function QuickCreateModals({
-  leads,
+  clientesRecorrentes,
   clientes,
   projetos,
 }: {
-  leads: Opcao[];
+  clientesRecorrentes: Opcao[];
   clientes: Opcao[];
   projetos: Projeto[];
 }) {
@@ -32,7 +32,11 @@ export function QuickCreateModals({
       />
       <NewEventoForm controlled={{ open: aberto === "evento", onClose: fechar }} />
       <NewClienteForm controlled={{ open: aberto === "cliente", onClose: fechar }} />
-      <NewPropostaForm leads={leads} clientes={clientes} controlled={{ open: aberto === "proposta", onClose: fechar }} />
+      <NewPropostaForm
+        clientesRecorrentes={clientesRecorrentes}
+        clientesFreela={clientes}
+        controlled={{ open: aberto === "proposta", onClose: fechar }}
+      />
     </>
   );
 }

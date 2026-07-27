@@ -256,6 +256,8 @@ model Proposta {
   lead               Lead?          @relation(fields: [leadId], references: [id])
   clienteId          String?
   cliente            Cliente?       @relation(fields: [clienteId], references: [id])
+  clienteRecorrenteId String?
+  clienteRecorrente   ClienteRecorrente? @relation(fields: [clienteRecorrenteId], references: [id])
   valor              Decimal?       @db.Decimal(12, 2)
   status             StatusProposta @default(RASCUNHO)
   fraseAbertura      String?
@@ -301,6 +303,8 @@ model Orcamento {
   lead             Lead?     @relation(fields: [leadId], references: [id])
   clienteId        String?
   cliente          Cliente?  @relation(fields: [clienteId], references: [id])
+  clienteRecorrenteId String?
+  clienteRecorrente   ClienteRecorrente? @relation(fields: [clienteRecorrenteId], references: [id])
   dataPrevista     DateTime?
   responsavel      String?
   margemPercentual Decimal   @db.Decimal(5, 2) @default(40)
@@ -440,6 +444,8 @@ model ClienteRecorrente {
 
   itensLocados ItemLocado[]
   lancamentos  Lancamento[]
+  propostas    Proposta[]
+  orcamentos   Orcamento[]
 }
 
 model ItemLocado {
