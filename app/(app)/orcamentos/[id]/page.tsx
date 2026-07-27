@@ -134,10 +134,18 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
     return naoProducaoNemPos && !CHAVES_EXTRAS.includes(c.chave ?? "");
   });
 
+  const producaoPreenchida = itensComInfo.some((i) => i.quantidade > 0 && i.categoria !== null && CATEGORIAS_PRODUCAO.includes(i.categoria));
+  const posPreenchida = itensComInfo.some((i) => i.quantidade > 0 && i.categoria !== null && CATEGORIAS_POS.includes(i.categoria));
+  const extrasPreenchida = itensComInfo.some((i) => {
+    const naoProducaoNemPos = !i.categoria || (!CATEGORIAS_PRODUCAO.includes(i.categoria) && !CATEGORIAS_POS.includes(i.categoria));
+    return i.quantidade > 0 && naoProducaoNemPos;
+  });
+
   const abas = [
     {
       id: "geral",
       label: "Geral",
+      completo: Boolean(orcamento.nome.trim()) && Boolean(alvoAtual),
       content: (
         <DetalhesOrcamentoForm
           orcamentoId={orcamento.id}
@@ -153,6 +161,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
     {
       id: "producao",
       label: "Produção",
+      completo: producaoPreenchida,
       content: (
         <ProducaoStep
           orcamentoId={orcamento.id}
@@ -165,6 +174,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
     {
       id: "pos",
       label: "Pós",
+      completo: posPreenchida,
       content: (
         <PosStep
           orcamentoId={orcamento.id}
@@ -177,6 +187,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
     {
       id: "extras",
       label: "Extras",
+      completo: extrasPreenchida,
       content: (
         <ExtrasStep
           orcamentoId={orcamento.id}
