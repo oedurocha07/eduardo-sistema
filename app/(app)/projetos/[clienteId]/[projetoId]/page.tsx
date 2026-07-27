@@ -11,6 +11,7 @@ import { MarcosSection } from "./MarcosSection";
 import { EquipeProjetoSection } from "./EquipeProjetoSection";
 import { DetalhesProjetoForm } from "./DetalhesProjetoForm";
 import { ArquivarProjetoButton } from "./ArquivarProjetoButton";
+import { DeleteProjetoButton } from "./DeleteProjetoButton";
 import { ETAPAS_PRODUCAO } from "../../constants";
 import { ArrowLeft, CalendarClock, Wallet, Users, TrendingUp } from "lucide-react";
 
@@ -56,6 +57,7 @@ export default async function ProjetoDetalhePage({
           <div className="flex items-center gap-2">
             {projeto.arquivado && <Badge tone="neutral">Arquivado</Badge>}
             <ArquivarProjetoButton id={projeto.id} clienteId={clienteId} arquivado={projeto.arquivado} />
+            <DeleteProjetoButton id={projeto.id} clienteId={clienteId} nome={projeto.nome} />
           </div>
         }
       />

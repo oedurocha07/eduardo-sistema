@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { NewProjetoForm } from "./NewProjetoForm";
 import { ProjetoStatusSelect } from "./ProjetoStatusSelect";
 import { ArquivarClienteButton } from "./ArquivarClienteButton";
+import { DeleteClienteButton } from "./DeleteClienteButton";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StatCard } from "@/app/components/ui/StatCard";
 import { EmptyState } from "@/app/components/ui/EmptyState";
@@ -105,8 +106,9 @@ export default async function ProjetosPage({
                     <span className="text-accent-hover">Abrir →</span>
                   </div>
                 </Link>
-                <div className="absolute top-3 right-3 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                   <ArquivarClienteButton id={c.id} ativo={c.ativo} />
+                  <DeleteClienteButton id={c.id} nome={c.empresa.nome} />
                 </div>
               </div>
             );
@@ -141,7 +143,7 @@ export default async function ProjetosPage({
                 </div>
                 <div className="flex flex-col gap-2">
                   {doEtapa.map((p) => (
-                    <Link key={p.id} href={`/projetos/${p.clienteId}`} className="card block p-3 hover:border-accent/50">
+                    <Link key={p.id} href={`/projetos/${p.clienteId}/${p.id}`} className="card block p-3 hover:border-accent/50">
                       <div className="truncate text-sm font-medium text-foreground">{p.nome}</div>
                       <div className="truncate text-xs text-muted">{p.cliente.empresa.nome}</div>
                     </Link>
@@ -166,7 +168,7 @@ export default async function ProjetosPage({
             <div className="flex flex-col gap-2">
               {projetos.map((p) => (
                 <div key={p.id} className="card flex items-center gap-3">
-                  <Link href={`/projetos/${p.clienteId}`} className="group flex min-w-0 flex-1 items-center gap-3">
+                  <Link href={`/projetos/${p.clienteId}/${p.id}`} className="group flex min-w-0 flex-1 items-center gap-3">
                     <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
                       <FolderKanban size={18} />
                     </div>

@@ -93,6 +93,35 @@ export async function arquivarProjeto(id: string, clienteId: string, arquivado: 
   revalidarProjeto(clienteId, id);
 }
 
+export async function deleteProjeto(id: string, clienteId: string) {
+  const lancamentos = await prisma.lancamento.count({ where: { projetoId: id } });
+  if (lancamentos > 0) {
+    throw new Error("Não é possível excluir: existem lançamentos financeiros vinculados a este projeto.");
+  }
+  await prisma.projeto.delete({ where: { id } });
+  revalidarProjeto(clienteId);
+}
+
+export async function deleteCliente(id: string) {
+  const cliente = await prisma.cliente.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { projetos: true, lancamentos: true, propostas: true, orcamentos: true, documentos: true, eventos: true } },
+    },
+  });
+  if (!cliente) return;
+
+  const total = Object.values(cliente._count).reduce((s, n) => s + n, 0);
+  if (total > 0) {
+    throw new Error(
+      "Não é possível excluir: esse cliente tem projetos, financeiro, propostas ou documentos vinculados. Apague-os primeiro ou arquive o cliente.",
+    );
+  }
+
+  await prisma.cliente.delete({ where: { id } });
+  revalidatePath("/projetos");
+}
+
 // ---------- Entregáveis ----------
 export async function createEntregavel(projetoId: string, clienteId: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
