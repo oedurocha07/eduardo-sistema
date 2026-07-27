@@ -1,13 +1,13 @@
 export const PP_DOCUMENT_CSS = `
 .pp-root {
-  --pp-bg: #ffffff;
-  --pp-surface: #f7f7f7;
-  --pp-surface-2: #f2f2f2;
-  --pp-fg: #111111;
-  --pp-muted: #555555;
-  --pp-faint: #7a7a7a;
-  --pp-border: #d8d8d8;
-  --pp-border-soft: #e8e8e8;
+  --pp-bg: #060606;
+  --pp-surface: rgba(255, 255, 255, 0.035);
+  --pp-surface-2: rgba(255, 255, 255, 0.055);
+  --pp-fg: #f7f7f5;
+  --pp-muted: rgba(247, 247, 245, 0.6);
+  --pp-faint: rgba(247, 247, 245, 0.38);
+  --pp-border: rgba(255, 255, 255, 0.14);
+  --pp-border-soft: rgba(255, 255, 255, 0.08);
 }
 
 .pp-shell {

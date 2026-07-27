@@ -52,7 +52,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@500,600,700&display=swap" />
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 40px 16px; background: #f2f2f2; }
+  body { margin: 0; padding: 40px 16px; background: #000000; }
   ${PP_DOCUMENT_CSS}
 </style>
 </head>
