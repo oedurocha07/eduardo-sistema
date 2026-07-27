@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { LeadTabs } from "@/app/(app)/comercial/leads/[id]/LeadTabs";
+import { EventoSectionNav } from "./EventoSectionNav";
 import { EventoStatusSelect } from "./EventoStatusSelect";
 import { EventoDeleteButton } from "./EventoDeleteButton";
 import { EventoTimeline } from "./EventoTimeline";
@@ -11,7 +11,18 @@ import { EquipeSection } from "./EquipeSection";
 import { EquipamentosSection } from "./EquipamentosSection";
 import { CustosSection } from "./CustosSection";
 import { ReferenciasSection } from "./ReferenciasSection";
-import { ArrowLeft, MapPin, CalendarRange, Radio, Users, LayoutGrid, ClipboardCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  CalendarRange,
+  Radio,
+  Users,
+  LayoutGrid,
+  ClipboardCheck,
+  Package,
+  Wallet,
+  Bookmark,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -149,84 +160,14 @@ export default async function EventoDetailPage({ params }: { params: Promise<{ i
     </div>
   );
 
-  const abas = [
-    { id: "visao", label: "Visão geral", content: visaoGeral },
-    {
-      id: "cronograma",
-      label: "Cronograma",
-      content: (
-        <EventoTimeline
-          eventoId={evento.id}
-          ambientes={ambientesTimeline}
-          rangeStartMs={rangeStart.getTime()}
-          rangeEndMs={rangeEnd.getTime()}
-          dataBaseISO={dataBaseISO}
-        />
-      ),
-    },
-    {
-      id: "equipe",
-      label: `Equipe (${evento.equipe.length})`,
-      content: (
-        <EquipeSection
-          eventoId={evento.id}
-          membros={evento.equipe.map((m) => ({
-            id: m.id,
-            nome: m.nome,
-            funcao: m.funcao,
-            diaISO: m.dia ? m.dia.toISOString() : null,
-            cache: m.cache ? Number(m.cache) : null,
-            contato: m.contato,
-          }))}
-        />
-      ),
-    },
-    {
-      id: "equipamentos",
-      label: "Equipamentos",
-      content: (
-        <EquipamentosSection
-          eventoId={evento.id}
-          equipamentos={evento.equipamentos.map((e) => ({
-            id: e.id,
-            nome: e.nome,
-            responsavel: e.responsavel,
-            status: e.status,
-            quantidade: e.quantidade,
-          }))}
-        />
-      ),
-    },
-    {
-      id: "checklist",
-      label: "Checklists",
-      content: (
-        <ChecklistSection
-          eventoId={evento.id}
-          itens={evento.checklist.map((c) => ({ id: c.id, titulo: c.titulo, fase: c.fase, concluido: c.concluido }))}
-        />
-      ),
-    },
-    {
-      id: "custos",
-      label: "Custos",
-      content: (
-        <CustosSection
-          eventoId={evento.id}
-          custos={evento.custos.map((c) => ({ id: c.id, descricao: c.descricao, tipo: c.tipo, valor: Number(c.valor) }))}
-        />
-      ),
-    },
-    {
-      id: "referencias",
-      label: "Referências",
-      content: (
-        <ReferenciasSection
-          eventoId={evento.id}
-          referencias={evento.referencias.map((r) => ({ id: r.id, titulo: r.titulo, url: r.url, arquivoUrl: r.arquivoUrl }))}
-        />
-      ),
-    },
+  const secoesNav = [
+    { id: "visao", label: "Visão geral" },
+    { id: "cronograma", label: "Cronograma" },
+    { id: "equipe", label: `Equipe (${evento.equipe.length})` },
+    { id: "equipamentos", label: "Equipamentos" },
+    { id: "checklist", label: "Checklists" },
+    { id: "custos", label: "Custos" },
+    { id: "referencias", label: "Referências" },
   ];
 
   return (
@@ -260,8 +201,91 @@ export default async function EventoDetailPage({ params }: { params: Promise<{ i
         )}
       </div>
 
-      <div className="card">
-        <LeadTabs abas={abas} />
+      <EventoSectionNav secoes={secoesNav} />
+
+      <div className="flex flex-col gap-10">
+        <section id="visao" className="scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <LayoutGrid size={16} className="text-accent" /> Visão geral
+          </h2>
+          {visaoGeral}
+        </section>
+
+        <section id="cronograma" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <CalendarRange size={16} className="text-accent" /> Cronograma
+          </h2>
+          <EventoTimeline
+            eventoId={evento.id}
+            ambientes={ambientesTimeline}
+            rangeStartMs={rangeStart.getTime()}
+            rangeEndMs={rangeEnd.getTime()}
+            dataBaseISO={dataBaseISO}
+          />
+        </section>
+
+        <section id="equipe" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <Users size={16} className="text-accent" /> Equipe ({evento.equipe.length})
+          </h2>
+          <EquipeSection
+            eventoId={evento.id}
+            membros={evento.equipe.map((m) => ({
+              id: m.id,
+              nome: m.nome,
+              funcao: m.funcao,
+              diaISO: m.dia ? m.dia.toISOString() : null,
+              cache: m.cache ? Number(m.cache) : null,
+              contato: m.contato,
+            }))}
+          />
+        </section>
+
+        <section id="equipamentos" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <Package size={16} className="text-accent" /> Equipamentos
+          </h2>
+          <EquipamentosSection
+            eventoId={evento.id}
+            equipamentos={evento.equipamentos.map((e) => ({
+              id: e.id,
+              nome: e.nome,
+              responsavel: e.responsavel,
+              status: e.status,
+              quantidade: e.quantidade,
+            }))}
+          />
+        </section>
+
+        <section id="checklist" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <ClipboardCheck size={16} className="text-accent" /> Checklists
+          </h2>
+          <ChecklistSection
+            eventoId={evento.id}
+            itens={evento.checklist.map((c) => ({ id: c.id, titulo: c.titulo, fase: c.fase, concluido: c.concluido }))}
+          />
+        </section>
+
+        <section id="custos" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <Wallet size={16} className="text-accent" /> Custos
+          </h2>
+          <CustosSection
+            eventoId={evento.id}
+            custos={evento.custos.map((c) => ({ id: c.id, descricao: c.descricao, tipo: c.tipo, valor: Number(c.valor) }))}
+          />
+        </section>
+
+        <section id="referencias" className="card scroll-mt-24">
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+            <Bookmark size={16} className="text-accent" /> Referências
+          </h2>
+          <ReferenciasSection
+            eventoId={evento.id}
+            referencias={evento.referencias.map((r) => ({ id: r.id, titulo: r.titulo, url: r.url, arquivoUrl: r.arquivoUrl }))}
+          />
+        </section>
       </div>
     </div>
   );
