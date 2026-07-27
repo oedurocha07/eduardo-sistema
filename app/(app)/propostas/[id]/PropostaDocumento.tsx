@@ -109,12 +109,6 @@ export function PropostaDocumento({
               <span className="pp-field-label">Cliente</span>
               <span className="pp-field-val">{clienteNome ?? "—"}</span>
             </div>
-            <div>
-              <span className="pp-field-label">Investimento</span>
-              <span className="pp-field-val">
-                {valor != null ? `${brl(valor)}${recorrente ? "/mês" : ""}` : "A combinar"}
-              </span>
-            </div>
           </div>
           <div className="pp-client-footer">
             Esta proposta foi preparada exclusivamente para você.

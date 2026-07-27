@@ -8,6 +8,24 @@ type Item = { id: string; titulo: string; custoInterno: number | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+const FATURAMENTO_60_40 =
+  "O faturamento será realizado em 60% referente à prestação de serviços e 40% referente à locação dos equipamentos utilizados na execução do projeto, conforme Nota Fiscal emitida pela AVRA.";
+
+const CONDICOES_PAGAMENTO_PRESET = [
+  {
+    label: "50% aprovação + 50% entrega",
+    texto: `50% na aprovação da proposta e 50% na entrega final dos materiais.\n${FATURAMENTO_60_40}`,
+  },
+  {
+    label: "À vista, na aprovação",
+    texto: `Pagamento à vista, mediante aprovação da proposta.\n${FATURAMENTO_60_40}`,
+  },
+  {
+    label: "Data combinada entre as partes",
+    texto: `Pagamento com data combinada entre ambas partes.\n${FATURAMENTO_60_40}`,
+  },
+];
+
 export function InvestimentoForm({
   propostaId,
   valor,
@@ -33,6 +51,7 @@ export function InvestimentoForm({
   const [ehRecorrente, setEhRecorrente] = useState(recorrente);
   const [margem, setMargem] = useState(margemDesejada ?? 0);
   const [valorAtual, setValorAtual] = useState(valor != null ? String(valor) : "");
+  const [condicoes, setCondicoes] = useState(condicoesPagamento ?? "");
   const validadeISO = validade ? validade.toISOString().slice(0, 10) : "";
 
   const itensComCusto = useMemo(() => itensEscopo.filter((i) => i.custoInterno != null && i.custoInterno > 0), [itensEscopo]);
@@ -162,11 +181,26 @@ export function InvestimentoForm({
           </label>
           <div className="col-span-2 flex flex-col gap-1">
             <label className="text-xs text-muted">Condições de pagamento</label>
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) setCondicoes(CONDICOES_PAGAMENTO_PRESET[Number(e.target.value)].texto);
+              }}
+              className="input"
+            >
+              <option value="">Escolher um modelo pronto...</option>
+              {CONDICOES_PAGAMENTO_PRESET.map((c, i) => (
+                <option key={i} value={i}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
             <textarea
               name="condicoesPagamento"
-              defaultValue={condicoesPagamento ?? ""}
+              value={condicoes}
+              onChange={(e) => setCondicoes(e.target.value)}
               placeholder="Ex: 50% na aprovação, 50% na entrega"
-              rows={2}
+              rows={4}
               className="input"
             />
           </div>

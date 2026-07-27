@@ -190,10 +190,6 @@ export function buildPropostaHtml(props: {
             <span class="pp-field-label">Cliente</span>
             <span class="pp-field-val">${clienteNome ? esc(clienteNome) : "—"}</span>
           </div>
-          <div>
-            <span class="pp-field-label">Investimento</span>
-            <span class="pp-field-val">${valor != null ? esc(brl(valor)) + (recorrente ? "/mês" : "") : "A combinar"}</span>
-          </div>
         </div>
         <div class="pp-client-footer">
           Esta proposta foi preparada exclusivamente para você.${validade ? ` Válida até ${esc(dataBR(validade))}.` : ""}
