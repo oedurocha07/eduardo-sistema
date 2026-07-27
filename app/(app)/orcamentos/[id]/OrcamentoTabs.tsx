@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, ArrowLeft, ArrowRight } from "lucide-react";
 
 type Aba = { id: string; label: string; content: React.ReactNode; completo?: boolean };
 
 export function OrcamentoTabs({ abas, inicial }: { abas: Aba[]; inicial?: string }) {
   const [ativa, setAtiva] = useState(inicial ?? abas[0]?.id);
+  const indiceAtivo = abas.findIndex((aba) => aba.id === ativa);
 
   return (
     <div>
@@ -46,6 +47,27 @@ export function OrcamentoTabs({ abas, inicial }: { abas: Aba[]; inicial?: string
         })}
       </div>
       {abas.find((aba) => aba.id === ativa)?.content}
+
+      <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+        <button
+          type="button"
+          onClick={() => setAtiva(abas[indiceAtivo - 1].id)}
+          disabled={indiceAtivo <= 0}
+          className="btn-secondary disabled:pointer-events-none disabled:opacity-0"
+        >
+          <ArrowLeft size={15} />
+          Anterior
+        </button>
+        <button
+          type="button"
+          onClick={() => setAtiva(abas[indiceAtivo + 1].id)}
+          disabled={indiceAtivo >= abas.length - 1}
+          className="btn-primary disabled:pointer-events-none disabled:opacity-0"
+        >
+          Próximo
+          <ArrowRight size={15} />
+        </button>
+      </div>
     </div>
   );
 }

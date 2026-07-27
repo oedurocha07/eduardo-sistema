@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { CircleCheck, Package, Plus, Trash2 } from "lucide-react";
+import { Circle, CircleCheck, Package, Plus, Trash2 } from "lucide-react";
 import { createItemEscopo, deleteItemEscopo, updateItemEscopo } from "../actions";
+import { ENTREGAS_SUGERIDAS } from "../constants";
 
 type Item = { id: string; titulo: string; detalhe: string | null; custoInterno: number | null };
 
@@ -71,27 +72,62 @@ function ItemEscopoCard({ propostaId, item }: { propostaId: string; item: Item }
   );
 }
 
+function SugestaoEscopoCard({ propostaId, titulo, detalhe }: { propostaId: string; titulo: string; detalhe: string }) {
+  const [isPending, startTransition] = useTransition();
+
+  function selecionar() {
+    const fd = new FormData();
+    fd.set("titulo", titulo);
+    fd.set("detalhe", detalhe);
+    startTransition(() => createItemEscopo(propostaId, fd));
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={selecionar}
+      disabled={isPending}
+      className="group flex items-center gap-3 rounded-xl border border-dashed border-border bg-background/40 px-4 py-3 text-left transition-colors hover:border-accent/50"
+    >
+      <Circle size={20} className="shrink-0 text-muted" strokeWidth={1.75} />
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-muted/10 text-muted">
+        <Package size={14} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium text-foreground">{titulo}</div>
+        <div className="text-xs text-muted">{detalhe}</div>
+      </div>
+    </button>
+  );
+}
+
 export function EscopoSection({ propostaId, itens }: { propostaId: string; itens: Item[] }) {
   const [aberto, setAberto] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const custoTotal = itens.reduce((soma, item) => soma + (item.custoInterno ?? 0), 0);
 
+  const tituloJaExiste = (titulo: string) => itens.some((i) => i.titulo.trim().toLowerCase() === titulo.trim().toLowerCase());
+  const sugestoesRestantes = ENTREGAS_SUGERIDAS.filter((s) => !tituloJaExiste(s.titulo));
+
   return (
     <div className="card">
       <div className="mb-4">
         <h2 className="font-semibold text-foreground">Escolha o escopo</h2>
         <p className="text-xs text-muted">
-          O que está incluído no projeto. Custo interno é só pra você — nunca aparece pro cliente.
+          Marque as entregas padrão ou crie uma personalizada. Custo interno é só pra você — nunca aparece pro cliente.
         </p>
       </div>
 
-      {itens.length === 0 ? (
+      {itens.length === 0 && sugestoesRestantes.length === 0 ? (
         <p className="text-sm text-muted">Nenhum item ainda.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {itens.map((item) => (
             <ItemEscopoCard key={item.id} propostaId={propostaId} item={item} />
+          ))}
+          {sugestoesRestantes.map((s) => (
+            <SugestaoEscopoCard key={s.titulo} propostaId={propostaId} titulo={s.titulo} detalhe={s.detalhe} />
           ))}
         </div>
       )}
@@ -127,7 +163,7 @@ export function EscopoSection({ propostaId, itens }: { propostaId: string; itens
         </form>
       ) : (
         <button onClick={() => setAberto(true)} className="mt-3 flex items-center gap-1 text-xs text-accent-hover hover:underline">
-          <Plus size={12} /> Adicionar item
+          <Plus size={12} /> Criar entrega personalizada
         </button>
       )}
     </div>

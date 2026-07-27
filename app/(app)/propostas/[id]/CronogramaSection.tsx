@@ -3,8 +3,31 @@
 import { useState, useTransition } from "react";
 import { CalendarRange, EyeOff, Plus, Trash2 } from "lucide-react";
 import { createEtapaCronograma, deleteEtapaCronograma, updatePropostaSemCronograma } from "../actions";
+import { ETAPAS_SUGERIDAS } from "../constants";
 
 type Etapa = { id: string; titulo: string; prazo: string | null };
+
+function SugestaoEtapaChip({ propostaId, titulo }: { propostaId: string; titulo: string }) {
+  const [isPending, startTransition] = useTransition();
+
+  function selecionar() {
+    const fd = new FormData();
+    fd.set("titulo", titulo);
+    startTransition(() => createEtapaCronograma(propostaId, fd));
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={selecionar}
+      disabled={isPending}
+      className="flex items-center gap-2 rounded-full border border-dashed border-border bg-background/40 px-4 py-2 text-left text-sm text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+    >
+      <Plus size={13} className="shrink-0" />
+      <span className="truncate">{titulo}</span>
+    </button>
+  );
+}
 
 export function CronogramaSection({
   propostaId,
@@ -17,6 +40,9 @@ export function CronogramaSection({
 }) {
   const [aberto, setAberto] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const tituloJaExiste = (titulo: string) => etapas.some((e) => e.titulo.trim().toLowerCase() === titulo.trim().toLowerCase());
+  const sugestoesRestantes = ETAPAS_SUGERIDAS.filter((t) => !tituloJaExiste(t));
 
   return (
     <div className="card">
@@ -62,7 +88,7 @@ export function CronogramaSection({
 
       {!semCronograma && (
         <>
-          {etapas.length === 0 ? (
+          {etapas.length === 0 && sugestoesRestantes.length === 0 ? (
             <p className="text-sm text-muted">Nenhuma etapa definida ainda.</p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -82,6 +108,9 @@ export function CronogramaSection({
                     <Trash2 size={13} />
                   </button>
                 </div>
+              ))}
+              {sugestoesRestantes.map((titulo) => (
+                <SugestaoEtapaChip key={titulo} propostaId={propostaId} titulo={titulo} />
               ))}
             </div>
           )}
@@ -104,7 +133,7 @@ export function CronogramaSection({
             </form>
           ) : (
             <button onClick={() => setAberto(true)} className="mt-2 flex items-center gap-1 text-xs text-accent-hover hover:underline">
-              <Plus size={12} /> Adicionar etapa
+              <Plus size={12} /> Criar etapa personalizada
             </button>
           )}
         </>
