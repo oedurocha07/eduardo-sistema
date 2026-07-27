@@ -257,13 +257,15 @@ model Proposta {
   cliente            Cliente?       @relation(fields: [clienteId], references: [id])
   valor              Decimal?       @db.Decimal(12, 2)
   status             StatusProposta @default(RASCUNHO)
-  conteudo           String?
+  fraseAbertura      String?
+  contextoProjeto    String?
   arquivoUrl         String?
   validade           DateTime?
   recorrente         Boolean        @default(false)
   parcelamento       Int?
   condicoesPagamento String?
   margemDesejada     Decimal?       @db.Decimal(5, 2)
+  semCronograma      Boolean        @default(false)
   createdAt          DateTime       @default(now())
 
   itensEscopo ItemEscopoProposta[]

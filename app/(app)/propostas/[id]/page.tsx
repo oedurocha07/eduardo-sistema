@@ -45,6 +45,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     {
       id: "geral",
       label: "Geral",
+      completo: Boolean(proposta.titulo.trim()) && Boolean(proposta.leadId || proposta.clienteId),
       content: (
         <div className="flex flex-col gap-6">
           <GeralForm
@@ -61,11 +62,19 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     {
       id: "conceito",
       label: "Conceito",
-      content: <ConceitoForm propostaId={proposta.id} conteudo={proposta.conteudo} />,
+      completo: Boolean(proposta.fraseAbertura?.trim() || proposta.contextoProjeto?.trim()),
+      content: (
+        <ConceitoForm
+          propostaId={proposta.id}
+          fraseAbertura={proposta.fraseAbertura}
+          contextoProjeto={proposta.contextoProjeto}
+        />
+      ),
     },
     {
       id: "escopo",
       label: "Escopo",
+      completo: proposta.itensEscopo.length > 0,
       content: (
         <EscopoSection
           propostaId={proposta.id}
@@ -81,11 +90,13 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     {
       id: "cronograma",
       label: "Cronograma",
-      content: <CronogramaSection propostaId={proposta.id} etapas={proposta.etapas} />,
+      completo: proposta.semCronograma || proposta.etapas.length > 0,
+      content: <CronogramaSection propostaId={proposta.id} etapas={proposta.etapas} semCronograma={proposta.semCronograma} />,
     },
     {
       id: "investimento",
       label: "Investimento",
+      completo: proposta.valor != null,
       content: (
         <InvestimentoForm
           propostaId={proposta.id}
@@ -96,6 +107,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           condicoesPagamento={proposta.condicoesPagamento}
           itensEscopo={proposta.itensEscopo.map((i) => ({
             id: i.id,
+            titulo: i.titulo,
             custoInterno: i.custoInterno ? Number(i.custoInterno) : null,
           }))}
           margemDesejada={proposta.margemDesejada ? Number(proposta.margemDesejada) : null}
@@ -107,13 +119,16 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
       label: "Resultado",
       content: (
         <ResultadoPreview
+          propostaId={proposta.id}
           titulo={proposta.titulo}
           clienteNome={clienteNome}
           nomeProdutora={config.nomeProdutora ?? "Avra Produtora LTDA"}
           logoUrl={config.logoUrl}
-          conteudo={proposta.conteudo}
+          fraseAbertura={proposta.fraseAbertura}
+          contextoProjeto={proposta.contextoProjeto}
           itensEscopo={proposta.itensEscopo}
           etapas={proposta.etapas}
+          semCronograma={proposta.semCronograma}
           valor={proposta.valor ? Number(proposta.valor) : null}
           recorrente={proposta.recorrente}
           parcelamento={proposta.parcelamento}

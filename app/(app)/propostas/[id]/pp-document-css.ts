@@ -1,116 +1,13 @@
-@import "tailwindcss";
-
-:root {
-  --background: #0a0a0d;
-  --surface: #131318;
-  --surface-hover: #1a1a22;
-  --border: #24242c;
-  --foreground: #f4f4f6;
-  --muted: #8b8b96;
-  --accent: #ebbb1c;
-  --accent-hover: #f2cb52;
-  --accent-foreground: #171717;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-hover: var(--surface-hover);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-danger: var(--danger);
-  --color-warning: var(--warning);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-* {
-  border-color: var(--border);
-}
-
-html {
-  color-scheme: dark;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 8px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--surface-hover);
-}
-
-@layer components {
-  .input {
-    @apply w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder-muted transition-colors outline-none focus:border-accent;
-  }
-
-  .card {
-    @apply rounded-xl border border-border bg-surface p-4;
-  }
-
-  .btn-primary,
-  .btn-secondary,
-  .btn-ghost,
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .btn-primary {
-    @apply bg-accent text-accent-foreground hover:bg-accent-hover;
-  }
-
-  .btn-secondary {
-    @apply border border-border bg-surface text-foreground hover:bg-surface-hover;
-  }
-
-  .btn-ghost {
-    @apply text-muted hover:bg-surface-hover hover:text-foreground;
-  }
-
-  .btn-danger {
-    @apply bg-danger text-white hover:opacity-90;
-  }
-
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
-  }
-}
-
-/* ============================================================
-   PROPOSTA — preview / impressão (documento client-facing)
-   Identidade oficial AVRA: preto profundo + branco profundo,
-   minimalista, sem cor de destaque. Não usa --accent do app.
-   ============================================================ */
+export const PP_DOCUMENT_CSS = `
 .pp-root {
-  --pp-bg: #060606;
-  --pp-surface: rgba(255, 255, 255, 0.035);
-  --pp-surface-2: rgba(255, 255, 255, 0.055);
-  --pp-fg: #f7f7f5;
-  --pp-muted: rgba(247, 247, 245, 0.6);
-  --pp-faint: rgba(247, 247, 245, 0.38);
-  --pp-border: rgba(255, 255, 255, 0.14);
-  --pp-border-soft: rgba(255, 255, 255, 0.08);
+  --pp-bg: #ffffff;
+  --pp-surface: #f7f7f7;
+  --pp-surface-2: #f2f2f2;
+  --pp-fg: #111111;
+  --pp-muted: #555555;
+  --pp-faint: #7a7a7a;
+  --pp-border: #d8d8d8;
+  --pp-border-soft: #e8e8e8;
 }
 
 .pp-shell {
@@ -122,12 +19,12 @@ body {
   color: var(--pp-fg);
   border-radius: 28px;
   border: 1px solid var(--pp-border);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.55;
 }
 
 .pp-heading {
-  font-family: "Chillax", var(--font-geist-sans), system-ui, sans-serif;
+  font-family: "Chillax", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -185,7 +82,6 @@ body {
   line-height: 1.6;
 }
 
-/* ---------- CAPA ---------- */
 .pp-capa {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
@@ -205,7 +101,6 @@ body {
   font-size: clamp(2rem, 4.2vw, 3.1rem);
   line-height: 1.05;
   text-transform: uppercase;
-  text-wrap: balance;
   overflow-wrap: anywhere;
 }
 
@@ -301,7 +196,6 @@ body {
   color: var(--pp-faint);
 }
 
-/* ---------- BLOCOS / SEÇÕES ---------- */
 .pp-bloco {
   padding: 40px 0;
   border-top: 1px solid var(--pp-border-soft);
@@ -349,12 +243,13 @@ body {
   font-size: 1.1rem;
 }
 
-/* ---------- ESCOPO ---------- */
 .pp-itens {
   list-style: none;
   overflow: hidden;
   border: 1px solid var(--pp-border);
   border-radius: 20px;
+  margin: 0;
+  padding: 0;
 }
 
 .pp-item {
@@ -378,7 +273,6 @@ body {
   color: var(--pp-muted);
 }
 
-/* ---------- INVESTIMENTO ---------- */
 .pp-investimento {
   margin-top: 20px;
   padding: 30px;
@@ -417,13 +311,13 @@ body {
   white-space: pre-line;
 }
 
-/* ---------- CRONOGRAMA ---------- */
 .pp-timeline {
   position: relative;
   list-style: none;
   display: grid;
   gap: 10px;
   padding-left: 22px;
+  margin: 0;
 }
 
 .pp-timeline::before {
@@ -471,7 +365,6 @@ body {
   font-size: 0.92rem;
 }
 
-/* ---------- RODAPÉ ---------- */
 .pp-rodape {
   display: flex;
   justify-content: space-between;
@@ -497,7 +390,6 @@ body {
   text-align: right;
 }
 
-/* ---------- RESPONSIVO ---------- */
 @media (max-width: 720px) {
   .pp-shell {
     padding: 36px 22px 48px;
@@ -518,34 +410,4 @@ body {
     text-align: left;
   }
 }
-
-/* ---------- IMPRESSÃO ----------
-   Inverte pra branco/preto (mesma paleta da marca, só invertida)
-   por legibilidade e economia de tinta no PDF/papel. */
-@media print {
-  .pp-root {
-    --pp-bg: #ffffff;
-    --pp-surface: #f7f7f7;
-    --pp-surface-2: #f2f2f2;
-    --pp-fg: #111111;
-    --pp-muted: #555555;
-    --pp-faint: #7a7a7a;
-    --pp-border: #d8d8d8;
-    --pp-border-soft: #e8e8e8;
-  }
-
-  .pp-shell {
-    max-width: none;
-    padding: 0;
-    border: none;
-    border-radius: 0;
-  }
-
-  .pp-bloco,
-  .pp-client-card,
-  .pp-investimento,
-  .pp-etapa,
-  .pp-item {
-    break-inside: avoid;
-  }
-}
+`;

@@ -54,8 +54,14 @@ export async function updatePropostaGeral(id: string, formData: FormData) {
 }
 
 export async function updatePropostaConceito(id: string, formData: FormData) {
-  const conteudo = String(formData.get("conteudo") ?? "").trim() || null;
-  await prisma.proposta.update({ where: { id }, data: { conteudo } });
+  const fraseAbertura = String(formData.get("fraseAbertura") ?? "").trim() || null;
+  const contextoProjeto = String(formData.get("contextoProjeto") ?? "").trim() || null;
+  await prisma.proposta.update({ where: { id }, data: { fraseAbertura, contextoProjeto } });
+  revalidarProposta(id);
+}
+
+export async function updatePropostaSemCronograma(id: string, semCronograma: boolean) {
+  await prisma.proposta.update({ where: { id }, data: { semCronograma } });
   revalidarProposta(id);
 }
 
@@ -112,6 +118,21 @@ export async function createItemEscopo(propostaId: string, formData: FormData) {
 
 export async function deleteItemEscopo(id: string, propostaId: string) {
   await prisma.itemEscopoProposta.delete({ where: { id } });
+  revalidarProposta(propostaId);
+}
+
+export async function updateItemEscopo(
+  id: string,
+  propostaId: string,
+  titulo: string,
+  detalhe: string,
+  custoInterno: number | null,
+) {
+  if (!titulo.trim()) throw new Error("Título do item é obrigatório");
+  await prisma.itemEscopoProposta.update({
+    where: { id },
+    data: { titulo: titulo.trim(), detalhe: detalhe.trim() || null, custoInterno },
+  });
   revalidarProposta(propostaId);
 }
 

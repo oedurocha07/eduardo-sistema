@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { updatePropostaInvestimento } from "../actions";
 
-type Item = { id: string; custoInterno: number | null };
+type Item = { id: string; titulo: string; custoInterno: number | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -32,6 +32,8 @@ export function InvestimentoForm({
   const [valorAtual, setValorAtual] = useState(valor != null ? String(valor) : "");
   const validadeISO = validade ? validade.toISOString().slice(0, 10) : "";
 
+  const itensComCusto = useMemo(() => itensEscopo.filter((i) => i.custoInterno != null && i.custoInterno > 0), [itensEscopo]);
+
   const custoOperacional = useMemo(
     () => itensEscopo.reduce((soma, item) => soma + (item.custoInterno ?? 0), 0),
     [itensEscopo],
@@ -51,10 +53,14 @@ export function InvestimentoForm({
         <div className="card flex flex-col gap-3">
           <h2 className="font-semibold text-foreground">Formação do preço</h2>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-border bg-background p-3">
               <div className="text-xs text-muted">Custo operacional</div>
               <div className="text-lg font-semibold text-foreground">{brl(custoOperacional)}</div>
+            </div>
+            <div className="rounded-lg border border-border bg-background p-3">
+              <div className="text-xs text-muted">Margem desejada</div>
+              <div className="text-lg font-semibold text-foreground">{margem}%</div>
             </div>
             <div className="rounded-lg border border-border bg-background p-3">
               <div className="text-xs text-muted">Preço sugerido</div>
@@ -80,7 +86,23 @@ export function InvestimentoForm({
               onChange={(e) => setMargem(Number(e.target.value))}
               className="w-full accent-accent"
             />
+            <p className="text-xs text-muted">O preço é recalculado em tempo real para proteger sua margem.</p>
           </div>
+
+          {itensComCusto.length > 0 && (
+            <div className="flex flex-col gap-1 border-t border-border pt-3">
+              <div className="flex items-center justify-between text-xs text-muted">
+                <span className="uppercase tracking-wide">Custos do escopo</span>
+                <span>{itensComCusto.length} item(ns)</span>
+              </div>
+              {itensComCusto.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground">{item.titulo}</span>
+                  <span className="text-muted">{brl(item.custoInterno ?? 0)}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <button
             type="button"
