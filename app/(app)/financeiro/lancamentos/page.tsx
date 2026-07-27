@@ -113,7 +113,18 @@ export default async function LancamentosPage({
             <tbody>
               {lancamentos.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                  <td className="px-4 py-3 font-medium text-foreground">{l.descricao}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${
+                          l.tipo === "RECEITA" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                        }`}
+                      >
+                        <Receipt size={13} />
+                      </div>
+                      {l.descricao}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-muted">{l.categoria ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{l.projeto?.nome ?? l.cliente?.empresa.nome ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{l.vencimento.toLocaleDateString("pt-BR")}</td>

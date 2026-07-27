@@ -39,7 +39,14 @@ export default async function FinanceiroPorProjetoPage() {
                   .reduce((s, l) => s + Number(l.valor), 0);
                 return (
                   <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                    <td className="px-4 py-3 font-medium text-foreground">{p.nome}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      <div className="flex items-center gap-2.5">
+                        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                          <BarChart3 size={13} />
+                        </div>
+                        {p.nome}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted">{p.cliente.empresa.nome}</td>
                     <td className="px-4 py-3 text-success">
                       <Money value={receita} />
