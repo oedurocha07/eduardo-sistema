@@ -61,7 +61,7 @@ export default async function ProjetosPage({
   return (
     <div className="p-6 md:p-8">
       <PageHeader
-        title="Clientes"
+        title="Base Freelance"
         subtitle="Sistema de produção — cada cliente, do briefing à entrega."
         action={<NewProjetoForm clientes={clientes.map((c) => ({ id: c.id, nome: c.empresa.nome }))} />}
       />

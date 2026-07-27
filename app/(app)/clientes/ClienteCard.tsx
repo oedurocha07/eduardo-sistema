@@ -24,6 +24,7 @@ type Cliente = {
   email: string | null;
   endereco: string | null;
   status: StatusClienteRecorrente;
+  recorrente: boolean;
   valorMensal: number | null;
   diaVencimento: number | null;
   descricaoServico: string | null;
@@ -68,6 +69,7 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
               <option value="PAUSADO">Pausado</option>
               <option value="ENCERRADO">Encerrado</option>
             </select>
+            <Badge tone={cliente.recorrente ? "neutral" : "warning"}>{cliente.recorrente ? "Recorrente" : "Avulso"}</Badge>
           </div>
           <div className="text-sm text-muted">{cliente.email}</div>
         </div>

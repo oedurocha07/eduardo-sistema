@@ -3,6 +3,8 @@ import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ArquivarEmpresaButton } from "./ArquivarEmpresaButton";
+import { EditEmpresaButton } from "./EditEmpresaButton";
+import { DeleteEmpresaButton } from "./DeleteEmpresaButton";
 import { Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -68,7 +70,11 @@ export default async function EmpresasPage({
                   <td className="px-4 py-3 text-muted">{empresa._count.leads}</td>
                   <td className="px-4 py-3 text-muted">{empresa._count.contatos}</td>
                   <td className="px-4 py-3">
-                    <ArquivarEmpresaButton id={empresa.id} arquivada={empresa.arquivada} />
+                    <div className="flex items-center gap-2">
+                      <EditEmpresaButton empresa={{ id: empresa.id, nome: empresa.nome, cidade: empresa.cidade, segmento: empresa.segmento }} />
+                      <ArquivarEmpresaButton id={empresa.id} arquivada={empresa.arquivada} />
+                      <DeleteEmpresaButton id={empresa.id} nome={empresa.nome} />
+                    </div>
                   </td>
                 </tr>
               ))}

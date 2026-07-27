@@ -10,10 +10,8 @@ export const dynamic = "force-dynamic";
 const ETAPA_LABEL = Object.fromEntries(ETAPAS.map((e) => [e.value, e.label]));
 const ETAPA_TONE: Record<string, "neutral" | "accent" | "success" | "danger" | "warning"> = {
   NOVO_LEAD: "neutral",
-  DIAGNOSTICO: "accent",
   REUNIAO: "accent",
   PROPOSTA_ENVIADA: "accent",
-  NEGOCIACAO: "warning",
   FECHADO: "success",
   PERDIDO: "danger",
 };

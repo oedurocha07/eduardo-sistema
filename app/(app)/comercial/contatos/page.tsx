@@ -2,6 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { EditContatoButton } from "./EditContatoButton";
+import { DeleteContatoButton } from "./DeleteContatoButton";
 import { Contact } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -51,9 +52,12 @@ export default async function ContatosPage() {
                   <td className="px-4 py-3 text-muted">{contato.email ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{contato.telefone ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <EditContatoButton
-                      contato={{ id: contato.id, nome: contato.nome, cargo: contato.cargo, email: contato.email, telefone: contato.telefone }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <EditContatoButton
+                        contato={{ id: contato.id, nome: contato.nome, cargo: contato.cargo, email: contato.email, telefone: contato.telefone }}
+                      />
+                      <DeleteContatoButton id={contato.id} nome={contato.nome} />
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -57,10 +57,8 @@ model Contato {
 
 enum EtapaLead {
   NOVO_LEAD
-  DIAGNOSTICO
   REUNIAO
   PROPOSTA_ENVIADA
-  NEGOCIACAO
   FECHADO
   PERDIDO
 }
@@ -422,6 +420,7 @@ model ClienteRecorrente {
   email                  String?
   endereco               String?
   status                 StatusClienteRecorrente @default(ATIVO)
+  recorrente             Boolean                 @default(true)
   valorMensal            Decimal?                @db.Decimal(12, 2)
   diaVencimento          Int?
   descricaoServico       String?

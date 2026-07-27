@@ -213,6 +213,59 @@ export async function arquivarEmpresa(id: string, arquivada: boolean) {
   revalidatePath("/comercial/empresas");
 }
 
+export async function updateEmpresa(id: string, formData: FormData) {
+  const nome = String(formData.get("nome") ?? "").trim();
+  const cidade = String(formData.get("cidade") ?? "").trim() || null;
+  const segmento = String(formData.get("segmento") ?? "").trim() || null;
+
+  if (!nome) throw new Error("Nome é obrigatório");
+
+  await prisma.empresa.update({ where: { id }, data: { nome, cidade, segmento } });
+
+  revalidatePath("/comercial/empresas");
+  revalidatePath("/comercial");
+  revalidatePath("/comercial/leads");
+}
+
+export async function deleteEmpresa(id: string) {
+  const [leadComVinculo, cliente] = await Promise.all([
+    prisma.lead.findFirst({
+      where: {
+        empresaId: id,
+        OR: [{ propostas: { some: {} } }, { orcamentos: { some: {} } }, { documentos: { some: {} } }],
+      },
+    }),
+    prisma.cliente.findUnique({
+      where: { empresaId: id },
+      include: {
+        _count: {
+          select: { projetos: true, lancamentos: true, propostas: true, orcamentos: true, documentos: true, eventos: true },
+        },
+      },
+    }),
+  ]);
+
+  if (leadComVinculo) {
+    throw new Error("Não é possível excluir: existem propostas, orçamentos ou contratos vinculados a um lead dessa empresa.");
+  }
+  if (cliente) {
+    const total = Object.values(cliente._count).reduce((s, n) => s + n, 0);
+    if (total > 0) {
+      throw new Error("Não é possível excluir: essa empresa já é cliente com projetos, financeiro, propostas ou documentos vinculados.");
+    }
+  }
+
+  await prisma.contato.deleteMany({ where: { empresaId: id } });
+  await prisma.lead.deleteMany({ where: { empresaId: id } });
+  if (cliente) await prisma.cliente.delete({ where: { id: cliente.id } });
+  await prisma.empresa.delete({ where: { id } });
+
+  revalidatePath("/comercial/empresas");
+  revalidatePath("/comercial");
+  revalidatePath("/comercial/leads");
+  revalidatePath("/comercial/contatos");
+}
+
 export async function updateContato(id: string, formData: FormData) {
   const nome = String(formData.get("nome") ?? "").trim();
   const cargo = String(formData.get("cargo") ?? "").trim() || null;
@@ -226,4 +279,23 @@ export async function updateContato(id: string, formData: FormData) {
   revalidatePath("/comercial/contatos");
   revalidatePath("/comercial");
   revalidatePath("/comercial/leads");
+}
+
+export async function deleteContato(id: string) {
+  const leadsVinculados = await prisma.lead.count({ where: { contatoId: id } });
+  if (leadsVinculados > 0) {
+    throw new Error("Não é possível excluir: este contato está vinculado a um ou mais leads.");
+  }
+
+  await prisma.contato.delete({ where: { id } });
+  revalidatePath("/comercial/contatos");
+}
+
+export async function limparProximaAcao(leadId: string) {
+  await prisma.lead.update({ where: { id: leadId }, data: { proximaAcao: null, proximaAcaoEm: null } });
+  await registrarAtividade(leadId, "PROXIMA_ACAO", "Próxima ação removida");
+
+  revalidatePath("/comercial/followups");
+  revalidatePath("/comercial/agenda");
+  revalidatePath(`/comercial/leads/${leadId}`);
 }

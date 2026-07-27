@@ -27,7 +27,7 @@ export default async function ClientesPage() {
       <PageHeader
         eyebrow="Base de clientes"
         title="Clientes Recorrentes"
-        subtitle="Cadastre, edite e acompanhe seus clientes fixos direto aqui."
+        subtitle="Cadastre, edite e acompanhe seus clientes — recorrentes ou avulsos — direto aqui."
         action={<NewClienteForm />}
       />
 

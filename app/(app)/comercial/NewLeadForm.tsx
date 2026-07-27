@@ -15,7 +15,7 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
       {!controlled && (
         <button onClick={() => setInternalOpen(true)} className="btn-primary">
           <Plus size={16} />
-          Novo lead
+          Novo cliente
         </button>
       )}
 
@@ -24,7 +24,7 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="card relative z-10 w-full max-w-lg gap-0 p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Novo lead</h2>
+              <h2 className="text-lg font-semibold text-foreground">Novo cliente</h2>
               <button onClick={() => setOpen(false)} className="text-muted hover:text-foreground">
                 <X size={18} />
               </button>
@@ -60,7 +60,7 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">
-                  Criar lead
+                  Criar cliente
                 </button>
               </div>
             </form>

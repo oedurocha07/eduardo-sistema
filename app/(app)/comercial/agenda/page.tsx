@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { calcularIntervalo, proximoRef, formatarISODate, mesmodia } from "@/app/(app)/agenda/dateUtils";
+import { LimparProximaAcaoButton } from "../LimparProximaAcaoButton";
 
 export const dynamic = "force-dynamic";
 
@@ -72,14 +73,20 @@ export default async function AgendaComercialPage({
                 {doDia.map((l) => {
                   const atrasado = l.proximaAcaoEm && l.proximaAcaoEm < hoje;
                   return (
-                    <Link
+                    <div
                       key={l.id}
-                      href={`/comercial/leads/${l.id}`}
-                      className={`rounded-lg border-l-2 bg-surface-hover px-2 py-1.5 text-xs ${atrasado ? "border-danger" : "border-accent"}`}
+                      className={`group relative rounded-lg border-l-2 bg-surface-hover px-2 py-1.5 text-xs ${atrasado ? "border-danger" : "border-accent"}`}
                     >
-                      <div className="truncate font-medium text-foreground">{l.empresa.nome}</div>
-                      <div className="truncate text-muted">{l.proximaAcao}</div>
-                    </Link>
+                      <Link href={`/comercial/leads/${l.id}`} className="block pr-3">
+                        <div className="truncate font-medium text-foreground">{l.empresa.nome}</div>
+                        <div className="truncate text-muted">{l.proximaAcao}</div>
+                      </Link>
+                      <LimparProximaAcaoButton
+                        leadId={l.id}
+                        size={11}
+                        className="absolute right-1 top-1 text-muted opacity-0 hover:text-danger group-hover:opacity-100"
+                      />
+                    </div>
                   );
                 })}
               </div>

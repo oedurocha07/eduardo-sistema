@@ -12,12 +12,22 @@ type Defaults = {
   idClienteAsaas?: string | null;
   enviarFaturaLocacao?: boolean;
   observacoes?: string | null;
+  recorrente?: boolean;
 };
 
 export function ClienteFormFields({ defaults = {} }: { defaults?: Defaults }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <input name="nome" defaultValue={defaults.nome ?? ""} placeholder="Nome do cliente *" required className="input col-span-2" />
+      <label className="col-span-2 flex items-center gap-2 text-sm text-muted">
+        <input
+          name="recorrente"
+          type="checkbox"
+          defaultChecked={defaults.recorrente ?? true}
+          className="h-4 w-4 rounded border-border accent-accent"
+        />
+        Cliente recorrente (cobrança mensal) — desmarque se for um projeto avulso
+      </label>
       <input name="email" defaultValue={defaults.email ?? ""} placeholder="E-mail" className="input" />
       <input name="cnpjCpf" defaultValue={defaults.cnpjCpf ?? ""} placeholder="CNPJ/CPF" className="input" />
       <input name="endereco" defaultValue={defaults.endereco ?? ""} placeholder="Endereço/CEP" className="input" />

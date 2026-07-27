@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/comercial", label: "Comercial", icon: Users },
   { href: "/clientes", label: "Base de Clientes", icon: Building2 },
-  { href: "/projetos", label: "Clientes", icon: FolderKanban },
+  { href: "/projetos", label: "Base Freelance", icon: FolderKanban },
   { href: "/eventos", label: "Eventos", icon: CalendarRange },
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/propostas", label: "Propostas", icon: FileText },

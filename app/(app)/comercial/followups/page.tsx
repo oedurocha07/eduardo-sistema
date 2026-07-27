@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { LimparProximaAcaoButton } from "../LimparProximaAcaoButton";
 import { BellRing } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -30,11 +31,14 @@ export default async function FollowupsPage() {
                 <div className="font-medium text-foreground">{lead.empresa.nome}</div>
                 <div className="text-sm text-muted">{lead.contato.nome}</div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-foreground">{lead.proximaAcao}</div>
-                {lead.proximaAcaoEm && (
-                  <div className="text-xs text-muted">{lead.proximaAcaoEm.toLocaleDateString("pt-BR")}</div>
-                )}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm text-foreground">{lead.proximaAcao}</div>
+                  {lead.proximaAcaoEm && (
+                    <div className="text-xs text-muted">{lead.proximaAcaoEm.toLocaleDateString("pt-BR")}</div>
+                  )}
+                </div>
+                <LimparProximaAcaoButton leadId={lead.id} />
               </div>
             </div>
           ))}
