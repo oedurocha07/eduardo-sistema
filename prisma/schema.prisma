@@ -263,6 +263,7 @@ model Proposta {
   recorrente         Boolean        @default(false)
   parcelamento       Int?
   condicoesPagamento String?
+  margemDesejada     Decimal?       @db.Decimal(5, 2)
   createdAt          DateTime       @default(now())
 
   itensEscopo ItemEscopoProposta[]
@@ -270,12 +271,13 @@ model Proposta {
 }
 
 model ItemEscopoProposta {
-  id         String   @id @default(cuid())
-  propostaId String
-  proposta   Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
-  titulo     String
-  detalhe    String?
-  ordem      Int      @default(0)
+  id           String   @id @default(cuid())
+  propostaId   String
+  proposta     Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  titulo       String
+  detalhe      String?
+  custoInterno Decimal? @db.Decimal(12, 2)
+  ordem        Int      @default(0)
 }
 
 model EtapaCronogramaProposta {
@@ -288,19 +290,21 @@ model EtapaCronogramaProposta {
 }
 
 model Orcamento {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   nome             String
   categoria        String
   leadId           String?
-  lead             Lead?    @relation(fields: [leadId], references: [id])
+  lead             Lead?     @relation(fields: [leadId], references: [id])
   clienteId        String?
-  cliente          Cliente? @relation(fields: [clienteId], references: [id])
-  margemPercentual Decimal  @db.Decimal(5, 2) @default(40)
-  mostrarDetalhado Boolean  @default(false)
-  isTemplate       Boolean  @default(false)
+  cliente          Cliente?  @relation(fields: [clienteId], references: [id])
+  dataPrevista     DateTime?
+  responsavel      String?
+  margemPercentual Decimal   @db.Decimal(5, 2) @default(40)
+  mostrarDetalhado Boolean   @default(false)
+  isTemplate       Boolean   @default(false)
   arquivoUrl       String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   itens ItemOrcamento[]
 }
@@ -309,6 +313,7 @@ model ItemCatalogo {
   id        String   @id @default(cuid())
   nome      String
   categoria String
+  chave     String?
   unidade   String
   precoBase Decimal  @db.Decimal(12, 2)
   ordem     Int      @default(0)

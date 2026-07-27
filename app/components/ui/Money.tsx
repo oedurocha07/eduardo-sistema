@@ -23,7 +23,7 @@ export function Money({
         </>
       ) : (
         <>
-          {sign}R$ {value.toLocaleString("pt-BR")}
+          {sign}R$ {value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           {suffix ? <span className="font-normal text-muted">{suffix}</span> : null}
         </>
       )}

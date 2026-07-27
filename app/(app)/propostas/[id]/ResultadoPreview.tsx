@@ -6,6 +6,9 @@ import { AvraLogo } from "@/app/components/AvraLogo";
 type Item = { id: string; titulo: string; detalhe: string | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
+
 export function ResultadoPreview({
   titulo,
   clienteNome,
@@ -35,8 +38,21 @@ export function ResultadoPreview({
   validade: Date | null;
   numero: string;
 }) {
+  const secoes = [Boolean(conteudo), itensEscopo.length > 0 || valor != null, etapas.length > 0];
+  let contador = 0;
+  const numeroSecao = (idx: number) => {
+    if (!secoes[idx]) return "";
+    contador += 1;
+    return String(contador).padStart(2, "0");
+  };
+
   return (
-    <div>
+    <div className="pp-root">
+      <link
+        rel="stylesheet"
+        href="https://api.fontshare.com/v2/css?f[]=chillax@500,600,700&display=swap"
+      />
+
       <div className="mb-4 flex justify-end print:hidden">
         <button onClick={() => window.print()} className="btn-primary">
           <Printer size={16} />
@@ -44,86 +60,156 @@ export function ResultadoPreview({
         </button>
       </div>
 
-      <div className="card mx-auto max-w-3xl gap-8 p-10 print:border-none print:p-0 print:shadow-none">
-        <div className="flex items-center justify-between border-b border-border pb-6">
-          <div className="flex items-center gap-3">
+      <div className="pp-shell">
+        <header className="pp-topo">
+          <div className="pp-brand">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={nomeProdutora} className="h-8 w-8 object-contain" />
             ) : (
-              <AvraLogo className="h-8 w-8 text-accent" />
+              <AvraLogo className="h-6 w-6" />
             )}
             <div>
-              <div className="text-xs tracking-wide text-muted uppercase">Proposta comercial</div>
-              <div className="text-sm font-semibold text-foreground">{nomeProdutora}</div>
+              <div className="pp-brand-sub">Proposta comercial</div>
+              <div className="pp-brand-name">{nomeProdutora}</div>
             </div>
           </div>
-          <div className="text-right text-xs text-muted">
+          <div className="pp-meta">
             <div>{numero}</div>
-            {validade && <div>Válida até {validade.toLocaleDateString("pt-BR")}</div>}
+            {validade && <div>Válida até {dataBR(validade)}</div>}
           </div>
-        </div>
+        </header>
 
-        <div>
-          <div className="text-xs tracking-wide text-accent uppercase">Preparada para</div>
-          <h1 className="mt-1 text-3xl font-bold text-foreground">{titulo}</h1>
-          {clienteNome && <p className="mt-1 text-muted">{clienteNome}</p>}
-        </div>
+        <section className="pp-capa">
+          <div className="pp-hero">
+            <span className="pp-eyebrow">Proposta audiovisual</span>
+            <h1 className="pp-heading pp-title">{titulo}</h1>
+            {clienteNome && <p className="pp-cliente">Preparada para {clienteNome}</p>}
+
+            <div className="pp-stats">
+              <div className="pp-stat">
+                <span className="pp-stat-val">{itensEscopo.length || "—"}</span>
+                <span className="pp-stat-label">Itens no escopo</span>
+              </div>
+              <div className="pp-stat">
+                <span className="pp-stat-val">{recorrente ? "Recorrente" : "Fechado"}</span>
+                <span className="pp-stat-label">Formato</span>
+              </div>
+              <div className="pp-stat">
+                <span className="pp-stat-val">{validade ? dataBR(validade) : "—"}</span>
+                <span className="pp-stat-label">Validade</span>
+              </div>
+            </div>
+          </div>
+
+          <aside className="pp-client-card">
+            <div className="pp-client-top">
+              <span className="pp-eyebrow" style={{ paddingLeft: 0 }}>
+                Preparada para
+              </span>
+              <span className="pp-numero-pill">{numero}</span>
+            </div>
+            <div className="pp-client-info">
+              <div>
+                <span className="pp-field-label">Cliente</span>
+                <span className="pp-field-val">{clienteNome ?? "—"}</span>
+              </div>
+              <div>
+                <span className="pp-field-label">Investimento</span>
+                <span className="pp-field-val">
+                  {valor != null ? `${brl(valor)}${recorrente ? "/mês" : ""}` : "A combinar"}
+                </span>
+              </div>
+            </div>
+            <div className="pp-client-footer">
+              Esta proposta foi preparada exclusivamente para você.
+              {validade && ` Válida até ${dataBR(validade)}.`}
+            </div>
+          </aside>
+        </section>
 
         {conteudo && (
-          <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Conceito</h2>
-            <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">{conteudo}</p>
-          </div>
+          <section className="pp-bloco">
+            <div className="pp-section-head">
+              <span className="pp-section-num">{numeroSecao(0)}</span>
+              <div>
+                <h2 className="pp-heading pp-section-title">O ponto de partida</h2>
+                <p className="pp-section-desc">Contexto da oportunidade e objetivo do projeto.</p>
+              </div>
+            </div>
+            <p className="pp-contexto">{conteudo}</p>
+          </section>
         )}
 
-        {itensEscopo.length > 0 && (
-          <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Escopo</h2>
-            <ul className="flex flex-col gap-2">
-              {itensEscopo.map((item) => (
-                <li key={item.id} className="rounded-lg border border-border px-3 py-2 text-sm">
-                  <span className="font-medium text-foreground">{item.titulo}</span>
-                  {item.detalhe && <span className="text-muted"> — {item.detalhe}</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
+        {(itensEscopo.length > 0 || valor != null) && (
+          <section className="pp-bloco">
+            <div className="pp-section-head">
+              <span className="pp-section-num">{numeroSecao(1)}</span>
+              <div>
+                <h2 className="pp-heading pp-section-title">Escopo e investimento</h2>
+                <p className="pp-section-desc">Itens contratados e composição do valor.</p>
+              </div>
+            </div>
+
+            {itensEscopo.length > 0 && (
+              <ul className="pp-itens">
+                {itensEscopo.map((item) => (
+                  <li key={item.id} className="pp-item">
+                    <span className="desc">{item.titulo}</span>
+                    {item.detalhe && <span className="detalhe">{item.detalhe}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {valor != null && (
+              <div className="pp-investimento">
+                <span className="label">{recorrente ? "Valor mensal" : "Investimento total"}</span>
+                <div className="num-total">
+                  {brl(valor)}
+                  {recorrente && <span className="por-mes"> /mês</span>}
+                </div>
+                {parcelamento && parcelamento > 1 && (
+                  <p className="parc">
+                    Em até {parcelamento}x de {brl(valor / parcelamento)} (sem juros)
+                  </p>
+                )}
+                {condicoesPagamento && <p className="cond">{condicoesPagamento}</p>}
+              </div>
+            )}
+          </section>
         )}
 
         {etapas.length > 0 && (
-          <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Cronograma</h2>
-            <ul className="flex flex-col gap-2">
+          <section className="pp-bloco">
+            <div className="pp-section-head">
+              <span className="pp-section-num">{numeroSecao(2)}</span>
+              <div>
+                <h2 className="pp-heading pp-section-title">Cronograma</h2>
+                <p className="pp-section-desc">Sequência prevista para alinhamento, produção e entrega.</p>
+              </div>
+            </div>
+            <ul className="pp-timeline">
               {etapas.map((etapa) => (
-                <li key={etapa.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-                  <span className="text-foreground">{etapa.titulo}</span>
-                  {etapa.prazo && <span className="text-muted">{etapa.prazo}</span>}
+                <li key={etapa.id} className="pp-etapa">
+                  <span className="prazo">{etapa.prazo ?? ""}</span>
+                  <span className="nome">{etapa.titulo}</span>
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
-        {valor != null && (
-          <div className="rounded-xl border border-accent/40 bg-accent/10 p-6">
-            <h2 className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">Investimento</h2>
-            <div className="text-3xl font-bold text-foreground">
-              R$ {valor.toLocaleString("pt-BR")}
-              {recorrente && <span className="text-base font-normal text-muted"> /mês</span>}
-            </div>
-            {parcelamento && parcelamento > 1 && (
-              <p className="mt-1 text-sm text-muted">
-                Em até {parcelamento}x de R$ {(valor / parcelamento).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
-              </p>
-            )}
-            {condicoesPagamento && <p className="mt-2 text-sm whitespace-pre-line text-muted">{condicoesPagamento}</p>}
-          </div>
-        )}
-
-        <div className="border-t border-border pt-4 text-center text-xs text-muted">
-          Proposta preparada pela {nomeProdutora}.
-        </div>
+        <footer className="pp-rodape">
+          {validade ? (
+            <span className="validade">
+              Proposta válida até {dataBR(validade)}. Depois desse prazo, valores e agenda podem ser revisados.
+            </span>
+          ) : (
+            <span />
+          )}
+          <span className="assinatura">{nomeProdutora}</span>
+        </footer>
       </div>
     </div>
   );

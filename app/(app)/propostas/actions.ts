@@ -65,6 +65,7 @@ export async function updatePropostaInvestimento(id: string, formData: FormData)
   const parcelamentoRaw = String(formData.get("parcelamento") ?? "").trim();
   const condicoesPagamento = String(formData.get("condicoesPagamento") ?? "").trim() || null;
   const recorrente = formData.get("recorrente") === "on";
+  const margemRaw = String(formData.get("margemDesejada") ?? "").trim();
 
   await prisma.proposta.update({
     where: { id },
@@ -74,6 +75,7 @@ export async function updatePropostaInvestimento(id: string, formData: FormData)
       parcelamento: parcelamentoRaw ? Number(parcelamentoRaw) : null,
       condicoesPagamento,
       recorrente,
+      margemDesejada: margemRaw ? Number(margemRaw) : null,
     },
   });
   revalidarProposta(id);
@@ -92,10 +94,19 @@ export async function uploadArquivoProposta(id: string, formData: FormData) {
 export async function createItemEscopo(propostaId: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const detalhe = String(formData.get("detalhe") ?? "").trim() || null;
+  const custoInternoRaw = String(formData.get("custoInterno") ?? "").trim();
   if (!titulo) throw new Error("Título do item é obrigatório");
 
   const count = await prisma.itemEscopoProposta.count({ where: { propostaId } });
-  await prisma.itemEscopoProposta.create({ data: { propostaId, titulo, detalhe, ordem: count } });
+  await prisma.itemEscopoProposta.create({
+    data: {
+      propostaId,
+      titulo,
+      detalhe,
+      custoInterno: custoInternoRaw ? Number(custoInternoRaw) : null,
+      ordem: count,
+    },
+  });
   revalidarProposta(propostaId);
 }
 

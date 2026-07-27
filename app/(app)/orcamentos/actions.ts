@@ -25,13 +25,24 @@ export async function createOrcamento(formData: FormData) {
 export async function updateOrcamentoDetalhes(id: string, formData: FormData) {
   const nome = String(formData.get("nome") ?? "").trim();
   const alvo = String(formData.get("alvo") ?? "").trim();
+  const dataPrevistaRaw = String(formData.get("dataPrevista") ?? "").trim();
+  const responsavel = String(formData.get("responsavel") ?? "").trim() || null;
   if (!nome) throw new Error("Nome é obrigatório");
 
   const [tipoAlvo, idAlvo] = alvo.split(":");
   const leadId = tipoAlvo === "lead" ? idAlvo : null;
   const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
 
-  await prisma.orcamento.update({ where: { id }, data: { nome, leadId, clienteId } });
+  await prisma.orcamento.update({
+    where: { id },
+    data: {
+      nome,
+      leadId,
+      clienteId,
+      dataPrevista: dataPrevistaRaw ? new Date(dataPrevistaRaw) : null,
+      responsavel,
+    },
+  });
   revalidarOrcamento(id);
 }
 
@@ -181,7 +192,45 @@ export async function gerarPropostaDoOrcamento(id: string) {
   redirect(`/propostas/${proposta.id}`);
 }
 
+// ---------- Itens fixos (steppers/toggles) por chave do catálogo ----------
+export async function setItemPorChave(orcamentoId: string, chave: string, quantidade: number) {
+  const itemCatalogo = await prisma.itemCatalogo.findFirst({ where: { chave } });
+  if (!itemCatalogo) return;
+
+  const existente = await prisma.itemOrcamento.findFirst({
+    where: { orcamentoId, itemCatalogoId: itemCatalogo.id },
+  });
+
+  if (quantidade <= 0) {
+    if (existente) await prisma.itemOrcamento.delete({ where: { id: existente.id } });
+  } else if (existente) {
+    await prisma.itemOrcamento.update({ where: { id: existente.id }, data: { quantidade } });
+  } else {
+    const count = await prisma.itemOrcamento.count({ where: { orcamentoId } });
+    await prisma.itemOrcamento.create({
+      data: {
+        orcamentoId,
+        itemCatalogoId: itemCatalogo.id,
+        nome: itemCatalogo.nome,
+        custoUnitario: itemCatalogo.precoBase,
+        quantidade,
+        ordem: count,
+      },
+    });
+  }
+  revalidarOrcamento(orcamentoId);
+}
+
 // ---------- Catálogo de preços ----------
+function slugify(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 export async function createItemCatalogo(formData: FormData) {
   const nome = String(formData.get("nome") ?? "").trim();
   const categoria = String(formData.get("categoria") ?? "").trim() || "Geral";
@@ -190,13 +239,25 @@ export async function createItemCatalogo(formData: FormData) {
   if (!nome) throw new Error("Nome é obrigatório");
 
   const count = await prisma.itemCatalogo.count();
-  await prisma.itemCatalogo.create({ data: { nome, categoria, unidade, precoBase, ordem: count } });
+  await prisma.itemCatalogo.create({
+    data: { nome, categoria, unidade, precoBase, ordem: count, chave: slugify(nome) },
+  });
   revalidatePath("/orcamentos");
 }
 
-export async function updateItemCatalogo(id: string, nome: string, precoBase: number, unidade: string) {
+export async function updateItemCatalogo(
+  id: string,
+  nome: string,
+  precoBase: number,
+  unidade: string,
+  categoria: string,
+) {
   if (!nome.trim()) throw new Error("Nome é obrigatório");
-  await prisma.itemCatalogo.update({ where: { id }, data: { nome: nome.trim(), precoBase, unidade } });
+  if (!categoria.trim()) throw new Error("Categoria é obrigatória");
+  await prisma.itemCatalogo.update({
+    where: { id },
+    data: { nome: nome.trim(), precoBase, unidade, categoria: categoria.trim() },
+  });
   revalidatePath("/orcamentos");
 }
 

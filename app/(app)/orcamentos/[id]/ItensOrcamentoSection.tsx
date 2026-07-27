@@ -44,10 +44,16 @@ export function ItensOrcamentoSection({
   orcamentoId,
   itens,
   catalogo,
+  titulo = "Escopo",
+  descricao = "Escolha os itens do catálogo ou adicione um item avulso.",
+  permitirAvulso = true,
 }: {
   orcamentoId: string;
   itens: Item[];
   catalogo: ItemCatalogo[];
+  titulo?: string;
+  descricao?: string;
+  permitirAvulso?: boolean;
 }) {
   const [itemCatalogoId, setItemCatalogoId] = useState("");
   const [avulsoAberto, setAvulsoAberto] = useState(false);
@@ -55,8 +61,8 @@ export function ItensOrcamentoSection({
 
   return (
     <div className="card">
-      <h2 className="mb-1 font-semibold text-foreground">Escopo</h2>
-      <p className="mb-3 text-xs text-muted">Escolha os itens do catálogo ou adicione um item avulso.</p>
+      <h2 className="mb-1 font-semibold text-foreground">{titulo}</h2>
+      <p className="mb-3 text-xs text-muted">{descricao}</p>
 
       {itens.length === 0 ? (
         <p className="mb-3 text-sm text-muted">Nenhum item ainda.</p>
@@ -68,56 +74,60 @@ export function ItensOrcamentoSection({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <select value={itemCatalogoId} onChange={(e) => setItemCatalogoId(e.target.value)} className="input flex-1">
-          <option value="">Escolher item do catálogo...</option>
-          {catalogo.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome} — R$ {c.precoBase.toLocaleString("pt-BR")} / {c.unidade}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          disabled={!itemCatalogoId || isPending}
-          onClick={() => {
-            startTransition(async () => {
-              await addItemDoCatalogo(orcamentoId, itemCatalogoId);
-              setItemCatalogoId("");
-            });
-          }}
-          className="btn-primary"
-        >
-          <Plus size={15} /> Adicionar
-        </button>
-      </div>
-
-      <div className="mt-2">
-        {avulsoAberto ? (
-          <form
-            action={(fd) => {
+      {catalogo.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <select value={itemCatalogoId} onChange={(e) => setItemCatalogoId(e.target.value)} className="input flex-1">
+            <option value="">Escolher item do catálogo...</option>
+            {catalogo.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome} — R$ {c.precoBase.toLocaleString("pt-BR")} / {c.unidade}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            disabled={!itemCatalogoId || isPending}
+            onClick={() => {
               startTransition(async () => {
-                await addItemAvulso(orcamentoId, fd);
-                setAvulsoAberto(false);
+                await addItemDoCatalogo(orcamentoId, itemCatalogoId);
+                setItemCatalogoId("");
               });
             }}
-            className="flex flex-wrap gap-2"
+            className="btn-primary"
           >
-            <input name="nome" placeholder="Item avulso *" required className="input flex-1 !py-1.5 text-xs" autoFocus />
-            <input name="custoUnitario" type="number" step="0.01" placeholder="Valor" className="input w-28 !py-1.5 text-xs" />
-            <button type="submit" className="btn-secondary !px-3 !py-1.5 text-xs">
-              Adicionar avulso
-            </button>
-          </form>
-        ) : (
-          <button
-            onClick={() => setAvulsoAberto(true)}
-            className="flex items-center gap-1 text-xs text-accent-hover hover:underline"
-          >
-            <Plus size={12} /> Item avulso (fora do catálogo)
+            <Plus size={15} /> Adicionar
           </button>
-        )}
-      </div>
+        </div>
+      )}
+
+      {permitirAvulso && (
+        <div className="mt-2">
+          {avulsoAberto ? (
+            <form
+              action={(fd) => {
+                startTransition(async () => {
+                  await addItemAvulso(orcamentoId, fd);
+                  setAvulsoAberto(false);
+                });
+              }}
+              className="flex flex-wrap gap-2"
+            >
+              <input name="nome" placeholder="Item avulso *" required className="input flex-1 !py-1.5 text-xs" autoFocus />
+              <input name="custoUnitario" type="number" step="0.01" placeholder="Valor" className="input w-28 !py-1.5 text-xs" />
+              <button type="submit" className="btn-secondary !px-3 !py-1.5 text-xs">
+                Adicionar avulso
+              </button>
+            </form>
+          ) : (
+            <button
+              onClick={() => setAvulsoAberto(true)}
+              className="flex items-center gap-1 text-xs text-accent-hover hover:underline"
+            >
+              <Plus size={12} /> Item avulso (fora do catálogo)
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
