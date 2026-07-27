@@ -71,6 +71,15 @@ export async function updateLeadEtapa(leadId: string, etapa: EtapaLead) {
       update: { ativo: true },
       create: { empresaId: lead.empresaId, ativo: true },
     });
+  } else {
+    // Só desativa se nenhum outro lead dessa empresa ainda estiver fechado
+    // (uma empresa pode ter mais de um lead ao longo do tempo — repeat business).
+    const outroLeadFechado = await prisma.lead.findFirst({
+      where: { empresaId: lead.empresaId, etapa: "FECHADO", id: { not: leadId } },
+    });
+    if (!outroLeadFechado) {
+      await prisma.cliente.updateMany({ where: { empresaId: lead.empresaId }, data: { ativo: false } });
+    }
   }
 
   const label = ETAPAS.find((e) => e.value === etapa)?.label ?? etapa;
@@ -80,6 +89,26 @@ export async function updateLeadEtapa(leadId: string, etapa: EtapaLead) {
   revalidatePath("/comercial/leads");
   revalidatePath(`/comercial/leads/${leadId}`);
   revalidatePath("/projetos");
+}
+
+export async function deleteLead(leadId: string) {
+  const [propostas, orcamentos, documentos] = await Promise.all([
+    prisma.proposta.count({ where: { leadId } }),
+    prisma.orcamento.count({ where: { leadId } }),
+    prisma.documento.count({ where: { leadId } }),
+  ]);
+
+  if (propostas > 0 || orcamentos > 0 || documentos > 0) {
+    throw new Error("Não é possível excluir: existem propostas, orçamentos ou contratos vinculados a este lead.");
+  }
+
+  await prisma.lead.delete({ where: { id: leadId } });
+
+  revalidatePath("/comercial");
+  revalidatePath("/comercial/leads");
+  revalidatePath("/comercial/empresas");
+  revalidatePath("/comercial/contatos");
+  revalidatePath("/comercial/followups");
 }
 
 export async function updateLeadTemperatura(leadId: string, temperatura: Temperatura) {

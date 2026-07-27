@@ -15,6 +15,7 @@ import { DetalhesForm } from "./DetalhesForm";
 import { LeadTabs } from "./LeadTabs";
 import { QuickStatusButtons } from "./QuickStatusButtons";
 import { TimelineSection } from "./TimelineSection";
+import { DeleteLeadButton } from "./DeleteLeadButton";
 import { ArrowLeft, FileText, Shield, FolderKanban, Wallet, Users, Paperclip } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -223,12 +224,15 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         title={lead.empresa.nome}
         subtitle={`${lead.contato.nome}${lead.origem ? ` · ${lead.origem}` : ""}`}
         action={
-          <div className="text-right">
-            <div className="text-xs text-muted uppercase">Valor estimado</div>
-            <div className="text-xl font-bold text-foreground">
-              <Money value={Number(lead.valorEstimado ?? 0)} />
+          <>
+            <div className="text-right">
+              <div className="text-xs text-muted uppercase">Valor estimado</div>
+              <div className="text-xl font-bold text-foreground">
+                <Money value={Number(lead.valorEstimado ?? 0)} />
+              </div>
             </div>
-          </div>
+            <DeleteLeadButton id={lead.id} empresaNome={lead.empresa.nome} />
+          </>
         }
       />
 
