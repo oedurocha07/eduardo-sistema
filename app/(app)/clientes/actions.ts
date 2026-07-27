@@ -22,7 +22,6 @@ export async function createCliente(formData: FormData) {
 
   const cnpjCpf = parseStr(formData.get("cnpjCpf"));
   const email = parseStr(formData.get("email"));
-  const idClienteAsaasManual = parseStr(formData.get("idClienteAsaas"));
 
   const cliente = await prisma.clienteRecorrente.create({
     data: {
@@ -34,21 +33,39 @@ export async function createCliente(formData: FormData) {
       recorrente: formData.get("recorrente") === "on",
       valorMensal: parseNum(formData.get("valorMensal")),
       diaVencimento: parseNum(formData.get("diaVencimento")),
+      valorTrabalho: parseNum(formData.get("valorTrabalho")),
+      formaPagamento: parseStr(formData.get("formaPagamento")),
       descricaoServico: parseStr(formData.get("descricaoServico")),
       descricaoNbs: parseStr(formData.get("descricaoNbs")),
       codigoServicoMunicipal: parseStr(formData.get("codigoServicoMunicipal")),
-      idClienteAsaas: idClienteAsaasManual,
       enviarFaturaLocacao: formData.get("enviarFaturaLocacao") === "on",
       observacoes: parseStr(formData.get("observacoes")),
     },
   });
 
-  // Se já veio com um ID do Asaas preenchido manualmente, respeita e não cria de novo lá.
-  if (!idClienteAsaasManual) {
-    const criado = await criarClienteAsaas({ nome, cnpjCpf, email });
-    if (criado) {
-      await prisma.clienteRecorrente.update({ where: { id: cliente.id }, data: { idClienteAsaas: criado.id } });
+  const itensRaw = parseStr(formData.get("itensLocadosJson"));
+  if (itensRaw) {
+    try {
+      const itens = JSON.parse(itensRaw) as { item: string; quantidade: string; valorUnitario: string }[];
+      const validos = itens.filter((i) => i.item?.trim());
+      if (validos.length > 0) {
+        await prisma.itemLocado.createMany({
+          data: validos.map((i) => ({
+            clienteRecorrenteId: cliente.id,
+            item: i.item.trim(),
+            quantidade: Number(i.quantidade) || 1,
+            valorUnitario: Number(i.valorUnitario) || 0,
+          })),
+        });
+      }
+    } catch (e) {
+      console.error("Erro ao processar itens locados:", e);
     }
+  }
+
+  const criado = await criarClienteAsaas({ nome, cnpjCpf, email });
+  if (criado) {
+    await prisma.clienteRecorrente.update({ where: { id: cliente.id }, data: { idClienteAsaas: criado.id } });
   }
 
   revalidatePath("/clientes");
@@ -95,10 +112,12 @@ export async function updateCliente(formData: FormData) {
       recorrente: formData.get("recorrente") === "on",
       valorMensal: parseNum(formData.get("valorMensal")),
       diaVencimento: parseNum(formData.get("diaVencimento")),
+      valorTrabalho: parseNum(formData.get("valorTrabalho")),
+      formaPagamento: parseStr(formData.get("formaPagamento")),
       descricaoServico: parseStr(formData.get("descricaoServico")),
       descricaoNbs: parseStr(formData.get("descricaoNbs")),
       codigoServicoMunicipal: parseStr(formData.get("codigoServicoMunicipal")),
-      idClienteAsaas: parseStr(formData.get("idClienteAsaas")),
+      // idClienteAsaas não é editável no formulário — é gerenciado automaticamente.
       enviarFaturaLocacao: formData.get("enviarFaturaLocacao") === "on",
       observacoes: parseStr(formData.get("observacoes")),
     },

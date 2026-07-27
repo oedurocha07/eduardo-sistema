@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createCliente } from "./actions";
-import { ClienteFormFields } from "./ClienteFormFields";
+import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
 import { CartaoCnpjUpload } from "./CartaoCnpjUpload";
 import { Plus, X } from "lucide-react";
 
@@ -52,7 +52,7 @@ export function NewClienteForm({ controlled }: { controlled?: { open: boolean; o
                   setFormKey((k) => k + 1);
                 }}
               />
-              <ClienteFormFields key={formKey} defaults={extraido} />
+              <ClienteBillingFields key={formKey} defaults={extraido} />
               <div className="mt-4 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
                   Cancelar

@@ -4,7 +4,7 @@ import { useState, useRef, useTransition } from "react";
 import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
 import { updateCliente, setStatus, deleteCliente, addItemLocado } from "./actions";
-import { ClienteFormFields } from "./ClienteFormFields";
+import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
 import { ItemLocadoRow } from "./ItemLocadoRow";
 import { StatusClienteRecorrente } from "@/app/generated/prisma/client";
 import { Pencil, Trash2, X, Plus } from "lucide-react";
@@ -27,6 +27,8 @@ type Cliente = {
   recorrente: boolean;
   valorMensal: number | null;
   diaVencimento: number | null;
+  valorTrabalho: number | null;
+  formaPagamento: string | null;
   descricaoServico: string | null;
   descricaoNbs: string | null;
   codigoServicoMunicipal: string | null;
@@ -76,9 +78,15 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-lg font-bold text-foreground">
-              <Money value={cliente.valorMensal ?? 0} suffix="/mês" />
+              {cliente.recorrente ? (
+                <Money value={cliente.valorMensal ?? 0} suffix="/mês" />
+              ) : (
+                <Money value={cliente.valorTrabalho ?? 0} />
+              )}
             </div>
-            {cliente.diaVencimento && <div className="text-xs text-muted">Vence dia {cliente.diaVencimento}</div>}
+            {cliente.recorrente
+              ? cliente.diaVencimento && <div className="text-xs text-muted">Vence dia {cliente.diaVencimento}</div>
+              : cliente.formaPagamento && <div className="text-xs text-muted">{cliente.formaPagamento}</div>}
           </div>
           <button onClick={() => setEditOpen(true)} className="text-muted hover:text-foreground" title="Editar">
             <Pencil size={16} />
@@ -186,7 +194,7 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
               }}
             >
               <input type="hidden" name="id" value={cliente.id} />
-              <ClienteFormFields defaults={cliente} />
+              <ClienteBillingFields defaults={cliente} mostrarItensLocados={false} />
               <div className="mt-4 flex justify-end gap-2">
                 <button type="button" onClick={() => setEditOpen(false)} className="btn-secondary">
                   Cancelar

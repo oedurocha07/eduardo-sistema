@@ -37,9 +37,10 @@ model Empresa {
   arquivada Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  contatos Contato[]
-  leads    Lead[]
-  cliente  Cliente?
+  contatos          Contato[]
+  leads             Lead[]
+  cliente           Cliente?
+  clienteRecorrente ClienteRecorrente?
 }
 
 model Contato {
@@ -415,6 +416,8 @@ enum StatusClienteRecorrente {
 model ClienteRecorrente {
   id                     String                  @id @default(cuid())
   notionId               String?                 @unique
+  empresaId              String?                 @unique
+  empresa                Empresa?                @relation(fields: [empresaId], references: [id])
   nome                   String
   cnpjCpf                String?
   email                  String?
@@ -423,6 +426,8 @@ model ClienteRecorrente {
   recorrente             Boolean                 @default(true)
   valorMensal            Decimal?                @db.Decimal(12, 2)
   diaVencimento          Int?
+  valorTrabalho          Decimal?                @db.Decimal(12, 2)
+  formaPagamento         String?
   descricaoServico       String?
   descricaoNbs           String?
   codigoServicoMunicipal String?
