@@ -1,3 +1,5 @@
+import { BRAND_COLORS, isBrandColorKey } from "@/app/lib/brandColors";
+
 type Item = { id: string; titulo: string; detalhe: string | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
@@ -29,6 +31,7 @@ export function buildPropostaHtml(props: {
   condicoesPagamento: string | null;
   validade: Date | null;
   numero: string;
+  corDestaque: string | null;
 }): string {
   const {
     titulo,
@@ -46,7 +49,11 @@ export function buildPropostaHtml(props: {
     condicoesPagamento,
     validade,
     numero,
+    corDestaque,
   } = props;
+
+  const accentStyleAttr =
+    corDestaque && isBrandColorKey(corDestaque) ? ` style="--pp-accent: ${BRAND_COLORS[corDestaque].accent}"` : "";
 
   const mostrarCronograma = !semCronograma && etapas.length > 0;
   const mostrarConceito = Boolean(fraseAbertura || contextoProjeto);
@@ -137,7 +144,7 @@ export function buildPropostaHtml(props: {
       </section>`
     : "";
 
-  return `<div class="pp-shell">
+  return `<div class="pp-shell"${accentStyleAttr}>
     <header class="pp-topo">
       <div class="pp-brand">
         ${logoHtml}

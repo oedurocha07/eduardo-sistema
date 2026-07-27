@@ -4,9 +4,13 @@ import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StatCard } from "@/app/components/ui/StatCard";
 import { Money } from "@/app/components/ui/Money";
 import { proximoRef } from "@/app/(app)/agenda/dateUtils";
+import { NewLancamentoForm } from "./lancamentos/NewLancamentoForm";
+import { ReceitaDespesaChart } from "@/app/components/dashboard/ReceitaDespesaChart";
 import { ArrowUpCircle, ArrowDownCircle, Wallet, Percent, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+const MESES_GRAFICO = 6;
 
 export default async function FinanceiroPage({
   searchParams,
@@ -36,7 +40,11 @@ export default async function FinanceiroPage({
   })();
   const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
 
-  const [lancamentosMes, vencimentosPendentes] = await Promise.all([
+  const inicioMesAtual = new Date(now.getFullYear(), now.getMonth(), 1);
+  const fimMesAtual = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const inicioGrafico = new Date(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1);
+
+  const [lancamentosMes, vencimentosPendentes, lancamentosGrafico, clientesRaw, projetosRaw] = await Promise.all([
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes } },
     }),
@@ -46,7 +54,26 @@ export default async function FinanceiroPage({
       orderBy: { vencimento: "asc" },
       take: 6,
     }),
+    prisma.lancamento.findMany({
+      where: { vencimento: { gte: inicioGrafico, lt: fimMesAtual }, status: "PAGO" },
+    }),
+    prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true } }),
+    prisma.projeto.findMany({ select: { id: true, nome: true, clienteId: true } }),
   ]);
+
+  const clientes = clientesRaw.map((c) => ({ id: c.id, nome: c.empresa.nome }));
+  const projetos = projetosRaw;
+
+  const dadosGrafico = Array.from({ length: MESES_GRAFICO }).map((_, i) => {
+    const mesData = new Date(inicioMesAtual.getFullYear(), inicioMesAtual.getMonth() - (MESES_GRAFICO - 1) + i, 1);
+    const proximoMesData = new Date(mesData.getFullYear(), mesData.getMonth() + 1, 1);
+    const doMes = lancamentosGrafico.filter((l) => l.vencimento >= mesData && l.vencimento < proximoMesData);
+    return {
+      mes: mesData.toLocaleDateString("pt-BR", { month: "short" }),
+      receita: doMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0),
+      despesa: doMes.filter((l) => l.tipo === "DESPESA").reduce((s, l) => s + Number(l.valor), 0),
+    };
+  });
 
   const recebido = lancamentosMes
     .filter((l) => l.tipo === "RECEITA" && l.status === "PAGO")
@@ -99,6 +126,8 @@ export default async function FinanceiroPage({
         }
       />
 
+      <NewLancamentoForm clientes={clientes} projetos={projetos} />
+
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Link href={`/financeiro/lancamentos?tipo=RECEITA&status=PAGO&mes=${mesParam}`} className="block">
           <StatCard
@@ -124,6 +153,14 @@ export default async function FinanceiroPage({
         <Link href={`/financeiro/lancamentos?mes=${mesParam}`} className="block">
           <StatCard label="Margem realizada" value={`${margem.toFixed(1)}%`} icon={Percent} />
         </Link>
+      </div>
+
+      <div className="card mb-4">
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted uppercase">Receita x Despesa</h2>
+          <span className="text-xs text-muted">Últimos {MESES_GRAFICO} meses</span>
+        </div>
+        <ReceitaDespesaChart dados={dadosGrafico} altura={70} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

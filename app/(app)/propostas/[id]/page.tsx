@@ -111,6 +111,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
             custoInterno: i.custoInterno ? Number(i.custoInterno) : null,
           }))}
           margemDesejada={proposta.margemDesejada ? Number(proposta.margemDesejada) : null}
+          corDestaque={proposta.corDestaque}
         />
       ),
     },
@@ -135,6 +136,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           condicoesPagamento={proposta.condicoesPagamento}
           validade={proposta.validade}
           numero={numero}
+          corDestaque={proposta.corDestaque}
         />
       ),
     },

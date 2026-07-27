@@ -1,4 +1,5 @@
 import { AvraLogo } from "@/app/components/AvraLogo";
+import { BRAND_COLORS, isBrandColorKey } from "@/app/lib/brandColors";
 
 type Item = { id: string; titulo: string; detalhe: string | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
@@ -22,6 +23,7 @@ export function PropostaDocumento({
   condicoesPagamento,
   validade,
   numero,
+  corDestaque,
 }: {
   titulo: string;
   clienteNome: string | null;
@@ -38,6 +40,7 @@ export function PropostaDocumento({
   condicoesPagamento: string | null;
   validade: Date | null;
   numero: string;
+  corDestaque: string | null;
 }) {
   const mostrarCronograma = !semCronograma && etapas.length > 0;
   const secoes = [Boolean(fraseAbertura || contextoProjeto), itensEscopo.length > 0 || valor != null, mostrarCronograma];
@@ -46,8 +49,13 @@ export function PropostaDocumento({
     return acc;
   }, []);
 
+  const accentStyle =
+    corDestaque && isBrandColorKey(corDestaque)
+      ? ({ "--pp-accent": BRAND_COLORS[corDestaque].accent } as React.CSSProperties)
+      : undefined;
+
   return (
-    <div className="pp-shell">
+    <div className="pp-shell" style={accentStyle}>
       <header className="pp-topo">
         <div className="pp-brand">
           {logoUrl ? (

@@ -266,6 +266,7 @@ model Proposta {
   condicoesPagamento String?
   margemDesejada     Decimal?       @db.Decimal(5, 2)
   semCronograma      Boolean        @default(false)
+  corDestaque        String?
   createdAt          DateTime       @default(now())
 
   itensEscopo ItemEscopoProposta[]

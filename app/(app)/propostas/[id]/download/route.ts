@@ -41,6 +41,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     condicoesPagamento: proposta.condicoesPagamento,
     validade: proposta.validade,
     numero,
+    corDestaque: proposta.corDestaque,
   });
 
   const html = `<!doctype html>

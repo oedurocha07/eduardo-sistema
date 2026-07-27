@@ -23,6 +23,7 @@ export function ResultadoPreview({
   condicoesPagamento,
   validade,
   numero,
+  corDestaque,
 }: {
   propostaId: string;
   titulo: string;
@@ -40,6 +41,7 @@ export function ResultadoPreview({
   condicoesPagamento: string | null;
   validade: Date | null;
   numero: string;
+  corDestaque: string | null;
 }) {
   return (
     <div className="pp-root">
@@ -75,6 +77,7 @@ export function ResultadoPreview({
         condicoesPagamento={condicoesPagamento}
         validade={validade}
         numero={numero}
+        corDestaque={corDestaque}
       />
     </div>
   );

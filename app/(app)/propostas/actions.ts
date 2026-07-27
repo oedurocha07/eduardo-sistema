@@ -65,6 +65,11 @@ export async function updatePropostaSemCronograma(id: string, semCronograma: boo
   revalidarProposta(id);
 }
 
+export async function updatePropostaCorDestaque(id: string, corDestaque: string | null) {
+  await prisma.proposta.update({ where: { id }, data: { corDestaque } });
+  revalidarProposta(id);
+}
+
 export async function updatePropostaInvestimento(id: string, formData: FormData) {
   const valorRaw = String(formData.get("valor") ?? "").trim();
   const validadeRaw = String(formData.get("validade") ?? "").trim();

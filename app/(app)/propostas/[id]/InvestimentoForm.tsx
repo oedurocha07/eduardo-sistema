@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { updatePropostaInvestimento } from "../actions";
+import { PropostaCorPicker } from "./PropostaCorPicker";
 
 type Item = { id: string; titulo: string; custoInterno: number | null };
 
@@ -16,6 +17,7 @@ export function InvestimentoForm({
   condicoesPagamento,
   itensEscopo,
   margemDesejada,
+  corDestaque,
 }: {
   propostaId: string;
   valor: number | null;
@@ -25,6 +27,7 @@ export function InvestimentoForm({
   condicoesPagamento: string | null;
   itensEscopo: Item[];
   margemDesejada: number | null;
+  corDestaque: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
   const [ehRecorrente, setEhRecorrente] = useState(recorrente);
@@ -49,9 +52,14 @@ export function InvestimentoForm({
 
   return (
     <div className="flex flex-col gap-4">
-      {custoOperacional > 0 && (
-        <div className="card flex flex-col gap-3">
-          <h2 className="font-semibold text-foreground">Formação do preço</h2>
+      <div className="card flex flex-col gap-3">
+        <h2 className="font-semibold text-foreground">Formação do preço</h2>
+
+        {custoOperacional <= 0 && (
+          <p className="text-xs text-muted">
+            Preencha o custo interno dos itens na aba Escopo pra ver o preço sugerido calculado aqui.
+          </p>
+        )}
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-border bg-background p-3">
@@ -107,12 +115,13 @@ export function InvestimentoForm({
           <button
             type="button"
             onClick={() => setValorAtual(precoSugerido.toFixed(2))}
-            className="btn-secondary self-start text-xs"
+            className="btn-primary self-start text-xs"
           >
             Usar {brl(precoSugerido)} como investimento
           </button>
-        </div>
-      )}
+      </div>
+
+      <PropostaCorPicker propostaId={propostaId} corAtual={corDestaque} />
 
       <form
         action={(formData) => {

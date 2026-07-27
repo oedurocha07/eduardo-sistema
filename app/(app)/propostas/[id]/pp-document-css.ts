@@ -43,7 +43,7 @@ export const PP_DOCUMENT_CSS = `
   content: "";
   width: 28px;
   height: 1px;
-  background: var(--pp-muted);
+  background: var(--pp-accent, var(--pp-muted));
 }
 
 .pp-topo {
@@ -163,8 +163,8 @@ export const PP_DOCUMENT_CSS = `
   letter-spacing: 0.1em;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--pp-border);
-  color: var(--pp-muted);
+  border: 1px solid var(--pp-accent, var(--pp-border));
+  color: var(--pp-accent, var(--pp-muted));
   white-space: nowrap;
 }
 
@@ -214,7 +214,7 @@ export const PP_DOCUMENT_CSS = `
 
 .pp-section-num {
   font-size: 0.7rem;
-  color: var(--pp-faint);
+  color: var(--pp-accent, var(--pp-faint));
   letter-spacing: 0.1em;
 }
 
@@ -294,6 +294,7 @@ export const PP_DOCUMENT_CSS = `
   font-size: clamp(1.9rem, 4vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--pp-accent, var(--pp-fg));
 }
 
 .pp-investimento .num-total .por-mes {

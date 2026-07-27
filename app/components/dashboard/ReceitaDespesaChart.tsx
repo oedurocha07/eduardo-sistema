@@ -28,14 +28,14 @@ function caminhoSuave(pontos: { x: number; y: number }[]) {
   return d;
 }
 
-export function ReceitaDespesaChart({ dados }: { dados: Ponto[] }) {
+export function ReceitaDespesaChart({ dados, altura = 200 }: { dados: Ponto[]; altura?: number }) {
   const { hidden } = useMoneyVisibility();
   const [hover, setHover] = useState<number | null>(null);
   const [tipo, setTipo] = useState<TipoGrafico>("barra");
 
   const max = Math.max(1, ...dados.map((d) => Math.max(d.receita, d.despesa)));
   const width = 560;
-  const height = 200;
+  const height = altura;
   const padding = 28;
   const groupWidth = (width - padding) / dados.length;
   const barWidth = Math.min(20, groupWidth / 3.2);
