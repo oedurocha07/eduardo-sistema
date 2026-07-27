@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
-import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
 import { DetalhesOrcamentoForm } from "./DetalhesOrcamentoForm";
 import { ProducaoStep } from "./ProducaoStep";
@@ -12,6 +10,7 @@ import { FormacaoPrecoCard } from "./FormacaoPrecoCard";
 import { AcoesOrcamento } from "./AcoesOrcamento";
 import { AnexoOrcamentoForm } from "./AnexoOrcamentoForm";
 import { OrcamentoTabs } from "./OrcamentoTabs";
+import { OrcamentoHero } from "./OrcamentoHero";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -73,7 +72,12 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
   if (!orcamento) notFound();
 
   const alvoAtual = orcamento.leadId ? `lead:${orcamento.leadId}` : orcamento.clienteId ? `cliente:${orcamento.clienteId}` : "";
+  const clienteNome = orcamento.lead?.empresa.nome ?? orcamento.cliente?.empresa.nome ?? null;
   const custoOperacional = orcamento.itens.reduce((s, i) => s + Number(i.custoUnitario) * i.quantidade, 0);
+  const margemPercentual = Number(orcamento.margemPercentual);
+  const margemFrac = margemPercentual / 100;
+  const precoSugerido = margemFrac < 1 ? custoOperacional / (1 - margemFrac) : custoOperacional;
+  const lucroEstimado = precoSugerido - custoOperacional;
 
   const catalogoPorId = new Map(catalogo.map((c) => [c.id, c]));
 
@@ -205,7 +209,7 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
           <FormacaoPrecoCard
             orcamentoId={orcamento.id}
             custoOperacional={custoOperacional}
-            margemPercentual={Number(orcamento.margemPercentual)}
+            margemPercentual={margemPercentual}
             mostrarDetalhado={orcamento.mostrarDetalhado}
           />
 
@@ -230,7 +234,6 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
           )}
 
           <AnexoOrcamentoForm orcamentoId={orcamento.id} arquivoUrl={orcamento.arquivoUrl} />
-          <AcoesOrcamento orcamentoId={orcamento.id} temCliente={Boolean(orcamento.clienteId)} isTemplate={orcamento.isTemplate} />
         </div>
       ),
     },
@@ -243,11 +246,21 @@ export default async function OrcamentoDetalhePage({ params }: { params: Promise
         Voltar para Orçamentos
       </Link>
 
-      <PageHeader
-        eyebrow={orcamento.categoria}
-        title={orcamento.nome}
-        action={orcamento.isTemplate ? <Badge tone="accent">Template</Badge> : undefined}
+      <OrcamentoHero
+        categoria={orcamento.categoria}
+        nome={orcamento.nome}
+        clienteNome={clienteNome}
+        responsavel={orcamento.responsavel}
+        isTemplate={orcamento.isTemplate}
+        custoOperacional={custoOperacional}
+        margemPercentual={margemPercentual}
+        precoSugerido={precoSugerido}
+        lucroEstimado={lucroEstimado}
       />
+
+      <div className="mb-4">
+        <AcoesOrcamento orcamentoId={orcamento.id} temCliente={Boolean(orcamento.clienteId)} isTemplate={orcamento.isTemplate} />
+      </div>
 
       <OrcamentoTabs abas={abas} />
     </div>

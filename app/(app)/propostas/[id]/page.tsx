@@ -2,10 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { getConfiguracao } from "@/app/lib/configuracao";
-import { PageHeader } from "@/app/components/ui/PageHeader";
-import { PropostaStatusSelect } from "../PropostaStatusSelect";
-import { DeletePropostaButton } from "../DeletePropostaButton";
 import { PropostaTabs } from "./PropostaTabs";
+import { PropostaHero } from "./PropostaHero";
 import { GeralForm } from "./GeralForm";
 import { AnexoPropostaForm } from "./AnexoPropostaForm";
 import { ConceitoForm } from "./ConceitoForm";
@@ -150,15 +148,16 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           Voltar para Propostas
         </Link>
 
-        <PageHeader
-          eyebrow={numero}
-          title={proposta.titulo}
-          action={
-            <div className="flex items-center gap-2">
-              <PropostaStatusSelect id={proposta.id} status={proposta.status} />
-              <DeletePropostaButton id={proposta.id} titulo={proposta.titulo} />
-            </div>
-          }
+        <PropostaHero
+          propostaId={proposta.id}
+          numero={numero}
+          titulo={proposta.titulo}
+          clienteNome={clienteNome}
+          status={proposta.status}
+          itensEscopoCount={proposta.itensEscopo.length}
+          valor={proposta.valor ? Number(proposta.valor) : null}
+          recorrente={proposta.recorrente}
+          validade={proposta.validade}
         />
       </div>
 

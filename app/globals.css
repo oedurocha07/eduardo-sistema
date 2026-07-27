@@ -95,6 +95,16 @@ body {
   .badge {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
   }
+
+  .hero-glow {
+    @apply rounded-2xl p-6;
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background:
+      radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+      var(--surface);
+    box-shadow: 0 0 50px -24px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
 }
 
 /* ============================================================
