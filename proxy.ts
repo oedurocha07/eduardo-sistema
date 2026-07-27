@@ -11,6 +11,10 @@ const PUBLIC_PATHS = [
   "/api/clientes-recorrentes/import",
   "/api/v1/clientes-recorrentes",
   "/api/v1/lancamentos",
+  "/manifest.webmanifest",
+  "/icon.svg",
+  "/apple-icon.png",
+  "/icon-512.png",
 ];
 
 export function proxy(request: NextRequest) {

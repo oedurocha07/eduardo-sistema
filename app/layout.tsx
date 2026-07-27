@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getConfiguracao } from "@/app/lib/configuracao";
@@ -14,6 +14,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0a0a0d",
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const nomeProdutora = await getConfiguracao()
     .then((c) => c.nomeProdutora ?? "Avra Produtora LTDA")
@@ -22,6 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: nomeProdutora,
     description: "Sistema interno de gestão",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: nomeProdutora,
+    },
   };
 }
 
