@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import { parseDataHoraLocal } from "@/app/lib/parseDataHoraLocal";
-import { Temperatura, EtapaLead, TipoAtividade } from "@/app/generated/prisma/client";
+import { criarClienteAsaas } from "@/app/lib/n8n";
+import { Temperatura, EtapaLead, TipoAtividade, StatusClienteRecorrente } from "@/app/generated/prisma/client";
 import { ETAPAS } from "./constants";
 
 const TEMP_LABEL: Record<string, string> = { FRIO: "Frio", MORNO: "Morno", QUENTE: "Quente" };
@@ -16,22 +17,45 @@ async function registrarAtividade(leadId: string, tipo: TipoAtividade, descricao
   });
 }
 
+function parseNum(v: FormDataEntryValue | null): number | null {
+  const s = String(v ?? "").trim();
+  return s ? Number(s) : null;
+}
+
+function parseStr(v: FormDataEntryValue | null): string | null {
+  const s = String(v ?? "").trim();
+  return s || null;
+}
+
 export async function createLead(formData: FormData) {
-  const empresaNome = String(formData.get("empresa") ?? "").trim();
-  const contatoNome = String(formData.get("contato") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim() || null;
-  const telefone = String(formData.get("telefone") ?? "").trim() || null;
-  const valorEstimadoRaw = String(formData.get("valorEstimado") ?? "").trim();
-  const origem = String(formData.get("origem") ?? "").trim() || null;
-  const cidade = String(formData.get("cidade") ?? "").trim() || null;
-  const segmento = String(formData.get("segmento") ?? "").trim() || null;
-  const temperatura = String(formData.get("temperatura") ?? "MORNO") as Temperatura;
-  const proximaAcao = String(formData.get("proximaAcao") ?? "").trim() || null;
-  const proximaAcaoEmRaw = String(formData.get("proximaAcaoEm") ?? "").trim();
+  const empresaNome = parseStr(formData.get("nome"));
+  const contatoNome = parseStr(formData.get("contato"));
+  const email = parseStr(formData.get("email"));
+  const telefone = parseStr(formData.get("telefone"));
+  const origem = parseStr(formData.get("origem"));
+  const cidade = parseStr(formData.get("cidade"));
+  const segmento = parseStr(formData.get("segmento"));
+  const temperatura = (formData.get("temperatura") as Temperatura) ?? "MORNO";
+  const proximaAcao = parseStr(formData.get("proximaAcao"));
+  const proximaAcaoEmRaw = parseStr(formData.get("proximaAcaoEm"));
 
   if (!empresaNome || !contatoNome) {
-    throw new Error("Empresa e contato são obrigatórios");
+    throw new Error("Nome do cliente e contato são obrigatórios");
   }
+
+  const recorrente = formData.get("recorrente") === "on";
+  const cnpjCpf = parseStr(formData.get("cnpjCpf"));
+  const endereco = parseStr(formData.get("endereco"));
+  const status = (formData.get("status") as StatusClienteRecorrente) ?? "ATIVO";
+  const valorMensal = parseNum(formData.get("valorMensal"));
+  const diaVencimento = parseNum(formData.get("diaVencimento"));
+  const valorTrabalho = parseNum(formData.get("valorTrabalho"));
+  const formaPagamento = parseStr(formData.get("formaPagamento"));
+  const descricaoServico = parseStr(formData.get("descricaoServico"));
+  const descricaoNbs = parseStr(formData.get("descricaoNbs"));
+  const codigoServicoMunicipal = parseStr(formData.get("codigoServicoMunicipal"));
+  const enviarFaturaLocacao = formData.get("enviarFaturaLocacao") === "on";
+  const observacoes = parseStr(formData.get("observacoes"));
 
   const empresa = await prisma.empresa.findFirst({ where: { nome: empresaNome } });
   const empresaFinal =
@@ -41,11 +65,13 @@ export async function createLead(formData: FormData) {
     data: { nome: contatoNome, email, telefone, empresaId: empresaFinal.id },
   });
 
+  const valorEstimado = recorrente ? valorMensal : valorTrabalho;
+
   const lead = await prisma.lead.create({
     data: {
       empresaId: empresaFinal.id,
       contatoId: contato.id,
-      valorEstimado: valorEstimadoRaw ? Number(valorEstimadoRaw) : null,
+      valorEstimado,
       origem,
       temperatura,
       proximaAcao,
@@ -55,11 +81,63 @@ export async function createLead(formData: FormData) {
 
   await registrarAtividade(lead.id, "CRIACAO", `Lead criado (${empresaNome})`);
 
+  const dadosCobranca = {
+    nome: empresaNome,
+    cnpjCpf,
+    email,
+    endereco,
+    status,
+    recorrente,
+    valorMensal,
+    diaVencimento,
+    valorTrabalho,
+    formaPagamento,
+    descricaoServico,
+    descricaoNbs,
+    codigoServicoMunicipal,
+    enviarFaturaLocacao,
+    observacoes,
+  };
+
+  const clienteRecorrente = await prisma.clienteRecorrente.upsert({
+    where: { empresaId: empresaFinal.id },
+    update: dadosCobranca,
+    create: { empresaId: empresaFinal.id, ...dadosCobranca },
+  });
+
+  const itensRaw = parseStr(formData.get("itensLocadosJson"));
+  if (itensRaw) {
+    try {
+      const itens = JSON.parse(itensRaw) as { item: string; quantidade: string; valorUnitario: string }[];
+      const validos = itens.filter((i) => i.item?.trim());
+      if (validos.length > 0) {
+        await prisma.itemLocado.createMany({
+          data: validos.map((i) => ({
+            clienteRecorrenteId: clienteRecorrente.id,
+            item: i.item.trim(),
+            quantidade: Number(i.quantidade) || 1,
+            valorUnitario: Number(i.valorUnitario) || 0,
+          })),
+        });
+      }
+    } catch (e) {
+      console.error("Erro ao processar itens locados:", e);
+    }
+  }
+
+  if (!clienteRecorrente.idClienteAsaas) {
+    const criado = await criarClienteAsaas({ nome: empresaNome, cnpjCpf, email });
+    if (criado) {
+      await prisma.clienteRecorrente.update({ where: { id: clienteRecorrente.id }, data: { idClienteAsaas: criado.id } });
+    }
+  }
+
   revalidatePath("/comercial");
   revalidatePath("/comercial/leads");
   revalidatePath("/comercial/empresas");
   revalidatePath("/comercial/contatos");
   revalidatePath("/comercial/followups");
+  revalidatePath("/clientes");
 }
 
 export async function updateLeadEtapa(leadId: string, etapa: EtapaLead) {
@@ -228,7 +306,7 @@ export async function updateEmpresa(id: string, formData: FormData) {
 }
 
 export async function deleteEmpresa(id: string) {
-  const [leadComVinculo, cliente] = await Promise.all([
+  const [leadComVinculo, cliente, clienteRecorrente] = await Promise.all([
     prisma.lead.findFirst({
       where: {
         empresaId: id,
@@ -243,6 +321,10 @@ export async function deleteEmpresa(id: string) {
         },
       },
     }),
+    prisma.clienteRecorrente.findUnique({
+      where: { empresaId: id },
+      include: { _count: { select: { lancamentos: true } } },
+    }),
   ]);
 
   if (leadComVinculo) {
@@ -254,16 +336,21 @@ export async function deleteEmpresa(id: string) {
       throw new Error("Não é possível excluir: essa empresa já é cliente com projetos, financeiro, propostas ou documentos vinculados.");
     }
   }
+  if (clienteRecorrente && clienteRecorrente._count.lancamentos > 0) {
+    throw new Error("Não é possível excluir: essa empresa tem lançamentos financeiros vinculados na Base de Clientes.");
+  }
 
   await prisma.contato.deleteMany({ where: { empresaId: id } });
   await prisma.lead.deleteMany({ where: { empresaId: id } });
   if (cliente) await prisma.cliente.delete({ where: { id: cliente.id } });
+  if (clienteRecorrente) await prisma.clienteRecorrente.delete({ where: { id: clienteRecorrente.id } });
   await prisma.empresa.delete({ where: { id } });
 
   revalidatePath("/comercial/empresas");
   revalidatePath("/comercial");
   revalidatePath("/comercial/leads");
   revalidatePath("/comercial/contatos");
+  revalidatePath("/clientes");
 }
 
 export async function updateContato(id: string, formData: FormData) {
