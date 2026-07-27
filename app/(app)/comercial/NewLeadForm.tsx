@@ -3,10 +3,13 @@
 import { useState, useRef } from "react";
 import { createLead } from "./actions";
 import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
+import { CartaoCnpjUpload } from "@/app/components/comercial/CartaoCnpjUpload";
 import { Plus, X } from "lucide-react";
 
 export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onClose: () => void } }) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [extraido, setExtraido] = useState<{ nome?: string; cnpjCpf?: string; endereco?: string }>({});
+  const [formKey, setFormKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const open = controlled ? controlled.open : internalOpen;
   const setOpen = (v: boolean) => (controlled ? !v && controlled.onClose() : setInternalOpen(v));
@@ -36,10 +39,21 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
               action={async (formData) => {
                 await createLead(formData);
                 formRef.current?.reset();
+                setExtraido({});
                 setOpen(false);
               }}
             >
-              <ClienteBillingFields />
+              <CartaoCnpjUpload
+                onExtraido={(dados) => {
+                  setExtraido({
+                    nome: dados.nome ?? undefined,
+                    cnpjCpf: dados.cnpj ?? undefined,
+                    endereco: dados.endereco ?? undefined,
+                  });
+                  setFormKey((k) => k + 1);
+                }}
+              />
+              <ClienteBillingFields key={formKey} defaults={extraido} />
 
               <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
                 <input name="contato" placeholder="Contato *" required className="input" />

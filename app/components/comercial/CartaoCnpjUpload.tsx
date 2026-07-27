@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { FileUp, Loader2 } from "lucide-react";
-import { extrairCartaoCnpj } from "./actions";
+import { extrairCartaoCnpj } from "@/app/(app)/clientes/actions";
 
 type Extraido = { nome: string | null; cnpj: string | null; endereco: string | null };
 

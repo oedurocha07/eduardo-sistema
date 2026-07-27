@@ -54,6 +54,7 @@ export async function createLead(formData: FormData) {
   const descricaoServico = parseStr(formData.get("descricaoServico"));
   const descricaoNbs = parseStr(formData.get("descricaoNbs"));
   const codigoServicoMunicipal = parseStr(formData.get("codigoServicoMunicipal"));
+  const codigoTributacaoNacional = parseStr(formData.get("codigoTributacaoNacional"));
   const enviarFaturaLocacao = formData.get("enviarFaturaLocacao") === "on";
   const observacoes = parseStr(formData.get("observacoes"));
 
@@ -95,6 +96,7 @@ export async function createLead(formData: FormData) {
     descricaoServico,
     descricaoNbs,
     codigoServicoMunicipal,
+    codigoTributacaoNacional,
     enviarFaturaLocacao,
     observacoes,
   };

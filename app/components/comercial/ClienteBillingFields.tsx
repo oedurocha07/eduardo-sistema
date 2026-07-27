@@ -17,14 +17,35 @@ export type Defaults = {
   descricaoServico?: string | null;
   descricaoNbs?: string | null;
   codigoServicoMunicipal?: string | null;
+  codigoTributacaoNacional?: string | null;
   idClienteAsaas?: string | null;
   enviarFaturaLocacao?: boolean;
   observacoes?: string | null;
 };
 
+// Códigos usados de verdade nas notas fiscais emitidas pelo Asaas. NBS e Código de
+// tributação nacional dos serviços de audiovisual (13.03.01.001/.002) ainda não têm
+// o texto oficial completo confirmado — ficam em branco até isso ser confirmado,
+// pra nunca gravar um texto fiscal incompleto/inventado.
 const SERVICOS_PRESET = [
-  { codigo: "13.03.01 - Produção audiovisual", nbs: "Serviço de produção audiovisual" },
-  { codigo: "17.06.01 - Marketing direto", nbs: "Marketing direto" },
+  {
+    label: "Serviços de marketing (17.06.01.001)",
+    codigo: "17.06.01.001",
+    tributacao: "170601 - Propaganda e publicidade, inclusive promoção de vendas, planejamento de campanhas ou sistemas de publicidade, elaboração de desenhos, textos e demais materiais publicitários.",
+    nbs: "1.1406.12.00 - Serviços de marketing direto e mala direta",
+  },
+  {
+    label: "Serviços gerais de audiovisual (13.03.01.001)",
+    codigo: "13.03.01.001",
+    tributacao: "",
+    nbs: "",
+  },
+  {
+    label: "Cobertura de eventos (13.03.01.002)",
+    codigo: "13.03.01.002",
+    tributacao: "",
+    nbs: "",
+  },
 ];
 
 type ItemInput = { item: string; quantidade: string; valorUnitario: string };
@@ -40,20 +61,25 @@ export function ClienteBillingFields({
   const [enviarFatura, setEnviarFatura] = useState(defaults.enviarFaturaLocacao ?? false);
   const [itens, setItens] = useState<ItemInput[]>([{ item: "", quantidade: "1", valorUnitario: "" }]);
 
-  const presetInicial = SERVICOS_PRESET.findIndex(
-    (p) => p.codigo === defaults.codigoServicoMunicipal && p.nbs === defaults.descricaoNbs,
-  );
+  const presetInicial = SERVICOS_PRESET.findIndex((p) => p.codigo === defaults.codigoServicoMunicipal);
   const [presetKey, setPresetKey] = useState(
     presetInicial >= 0 ? String(presetInicial) : defaults.codigoServicoMunicipal || defaults.descricaoNbs ? "outro" : "",
   );
   const [codigo, setCodigo] = useState(defaults.codigoServicoMunicipal ?? "");
+  const [tributacao, setTributacao] = useState(defaults.codigoTributacaoNacional ?? "");
   const [nbs, setNbs] = useState(defaults.descricaoNbs ?? "");
+  const [diaVencimentoData, setDiaVencimentoData] = useState(() => {
+    if (!defaults.diaVencimento) return "";
+    const hoje = new Date();
+    return new Date(hoje.getFullYear(), hoje.getMonth(), defaults.diaVencimento).toISOString().slice(0, 10);
+  });
 
   function selecionarPreset(v: string) {
     setPresetKey(v);
     if (v === "outro" || v === "") return;
     const preset = SERVICOS_PRESET[Number(v)];
     setCodigo(preset.codigo);
+    setTributacao(preset.tributacao);
     setNbs(preset.nbs);
   }
 
@@ -107,15 +133,20 @@ export function ClienteBillingFields({
             placeholder="Valor mensal"
             className="input"
           />
-          <input
-            name="diaVencimento"
-            type="number"
-            min={1}
-            max={31}
-            defaultValue={defaults.diaVencimento ?? ""}
-            placeholder="Dia de vencimento"
-            className="input"
-          />
+          <div className="flex flex-col gap-1">
+            <input
+              type="date"
+              value={diaVencimentoData}
+              onChange={(e) => setDiaVencimentoData(e.target.value)}
+              className="input"
+            />
+            <input
+              type="hidden"
+              name="diaVencimento"
+              value={diaVencimentoData ? String(new Date(`${diaVencimentoData}T00:00:00`).getDate()) : ""}
+            />
+            <span className="text-xs text-muted">Só o dia do mês é usado (repete todo mês)</span>
+          </div>
         </>
       ) : (
         <>
@@ -143,31 +174,35 @@ export function ClienteBillingFields({
       )}
 
       <select value={presetKey} onChange={(e) => selecionarPreset(e.target.value)} className="input col-span-2">
-        <option value="">Tipo de serviço (NBS / código municipal)...</option>
+        <option value="">Tipo de serviço (código / NBS / tributação)...</option>
         {SERVICOS_PRESET.map((p, i) => (
           <option key={i} value={String(i)}>
-            {p.codigo}
+            {p.label}
           </option>
         ))}
         <option value="outro">Outro (digitar manualmente)</option>
       </select>
-      {presetKey === "outro" ? (
-        <>
-          <input
-            name="codigoServicoMunicipal"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            placeholder="Código serviço municipal"
-            className="input"
-          />
-          <input name="descricaoNbs" value={nbs} onChange={(e) => setNbs(e.target.value)} placeholder="Descrição NBS" className="input" />
-        </>
-      ) : (
-        <>
-          <input type="hidden" name="codigoServicoMunicipal" value={codigo} />
-          <input type="hidden" name="descricaoNbs" value={nbs} />
-        </>
-      )}
+      <input
+        name="codigoServicoMunicipal"
+        value={codigo}
+        onChange={(e) => setCodigo(e.target.value)}
+        placeholder="Código de serviço (ex: 13.03.01.001)"
+        className="input"
+      />
+      <input
+        name="codigoTributacaoNacional"
+        value={tributacao}
+        onChange={(e) => setTributacao(e.target.value)}
+        placeholder="Código de tributação nacional"
+        className="input col-span-2"
+      />
+      <input
+        name="descricaoNbs"
+        value={nbs}
+        onChange={(e) => setNbs(e.target.value)}
+        placeholder="Código NBS"
+        className="input col-span-2"
+      />
 
       <textarea
         name="descricaoServico"

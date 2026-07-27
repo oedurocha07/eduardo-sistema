@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { createCliente } from "./actions";
 import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
-import { CartaoCnpjUpload } from "./CartaoCnpjUpload";
+import { CartaoCnpjUpload } from "@/app/components/comercial/CartaoCnpjUpload";
 import { Plus, X } from "lucide-react";
 
 export function NewClienteForm({ controlled }: { controlled?: { open: boolean; onClose: () => void } }) {
@@ -28,7 +28,7 @@ export function NewClienteForm({ controlled }: { controlled?: { open: boolean; o
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="card relative z-10 max-h-[90vh] w-full max-w-lg gap-0 overflow-y-auto p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Novo cliente recorrente</h2>
+              <h2 className="text-lg font-semibold text-foreground">Novo cliente</h2>
               <button onClick={() => setOpen(false)} className="text-muted hover:text-foreground">
                 <X size={18} />
               </button>

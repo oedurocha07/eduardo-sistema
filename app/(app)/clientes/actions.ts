@@ -38,6 +38,7 @@ export async function createCliente(formData: FormData) {
       descricaoServico: parseStr(formData.get("descricaoServico")),
       descricaoNbs: parseStr(formData.get("descricaoNbs")),
       codigoServicoMunicipal: parseStr(formData.get("codigoServicoMunicipal")),
+      codigoTributacaoNacional: parseStr(formData.get("codigoTributacaoNacional")),
       enviarFaturaLocacao: formData.get("enviarFaturaLocacao") === "on",
       observacoes: parseStr(formData.get("observacoes")),
     },
@@ -117,6 +118,7 @@ export async function updateCliente(formData: FormData) {
       descricaoServico: parseStr(formData.get("descricaoServico")),
       descricaoNbs: parseStr(formData.get("descricaoNbs")),
       codigoServicoMunicipal: parseStr(formData.get("codigoServicoMunicipal")),
+      codigoTributacaoNacional: parseStr(formData.get("codigoTributacaoNacional")),
       // idClienteAsaas não é editável no formulário — é gerenciado automaticamente.
       enviarFaturaLocacao: formData.get("enviarFaturaLocacao") === "on",
       observacoes: parseStr(formData.get("observacoes")),
