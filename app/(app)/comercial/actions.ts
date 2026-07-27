@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
+import { parseDataHoraLocal } from "@/app/lib/parseDataHoraLocal";
 import { Temperatura, EtapaLead, TipoAtividade } from "@/app/generated/prisma/client";
 import { ETAPAS } from "./constants";
 
@@ -48,7 +49,7 @@ export async function createLead(formData: FormData) {
       origem,
       temperatura,
       proximaAcao,
-      proximaAcaoEm: proximaAcaoEmRaw ? new Date(proximaAcaoEmRaw) : null,
+      proximaAcaoEm: proximaAcaoEmRaw ? parseDataHoraLocal(proximaAcaoEmRaw) : null,
     },
   });
 
@@ -92,7 +93,7 @@ export async function updateProximaAcao(leadId: string, formData: FormData) {
   const proximaAcao = String(formData.get("proximaAcao") ?? "").trim() || null;
   const data = String(formData.get("data") ?? "").trim();
   const hora = String(formData.get("hora") ?? "").trim();
-  const proximaAcaoEm = data ? new Date(`${data}T${hora || "09:00"}`) : null;
+  const proximaAcaoEm = data ? parseDataHoraLocal(`${data}T${hora || "09:00"}`) : null;
 
   await prisma.lead.update({ where: { id: leadId }, data: { proximaAcao, proximaAcaoEm } });
 

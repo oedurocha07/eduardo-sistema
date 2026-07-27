@@ -3,11 +3,13 @@ export function PageHeader({
   subtitle,
   eyebrow,
   action,
+  titleExtra,
 }: {
   title: string;
   subtitle?: string;
   eyebrow?: string;
   action?: React.ReactNode;
+  titleExtra?: React.ReactNode;
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -18,7 +20,10 @@ export function PageHeader({
             {eyebrow}
           </div>
         )}
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          {titleExtra}
+        </div>
         {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
       </div>
       {action && <div className="flex items-center gap-2">{action}</div>}

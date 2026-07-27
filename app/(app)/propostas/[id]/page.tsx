@@ -43,12 +43,16 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     {
       id: "geral",
       label: "Geral",
-      completo: Boolean(proposta.titulo.trim()) && Boolean(proposta.leadId || proposta.clienteId),
+      completo:
+        Boolean(proposta.titulo.trim()) &&
+        Boolean(proposta.leadId || proposta.clienteId || proposta.nomeEmpresa?.trim() || proposta.nomeCliente?.trim()),
       content: (
         <div className="flex flex-col gap-6">
           <GeralForm
             propostaId={proposta.id}
             titulo={proposta.titulo}
+            nomeEmpresa={proposta.nomeEmpresa ?? ""}
+            nomeCliente={proposta.nomeCliente ?? ""}
             alvoAtual={alvoAtual}
             leads={leads.map((l) => ({ id: l.id, label: l.empresa.nome }))}
             clientes={clientes.map((c) => ({ id: c.id, label: c.empresa.nome }))}

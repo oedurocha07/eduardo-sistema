@@ -8,12 +8,16 @@ type Opcao = { id: string; label: string };
 export function GeralForm({
   propostaId,
   titulo,
+  nomeEmpresa,
+  nomeCliente,
   alvoAtual,
   leads,
   clientes,
 }: {
   propostaId: string;
   titulo: string;
+  nomeEmpresa: string;
+  nomeCliente: string;
   alvoAtual: string;
   leads: Opcao[];
   clientes: Opcao[];
@@ -30,7 +34,15 @@ export function GeralForm({
         <input name="titulo" defaultValue={titulo} required className="input" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted">Cliente</label>
+        <label className="text-xs text-muted">Nome da empresa</label>
+        <input name="nomeEmpresa" defaultValue={nomeEmpresa} placeholder="Ex: Cedibra" className="input" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-muted">Nome do cliente</label>
+        <input name="nomeCliente" defaultValue={nomeCliente} placeholder="Ex: João Silva" className="input" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-muted">Vincular a um cadastro existente (opcional)</label>
         <select name="alvo" defaultValue={alvoAtual} className="input">
           <option value="">Sem vínculo</option>
           {leads.length > 0 && (

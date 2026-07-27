@@ -251,6 +251,8 @@ enum StatusProposta {
 model Proposta {
   id                 String         @id @default(cuid())
   titulo             String
+  nomeEmpresa        String?
+  nomeCliente        String?
   leadId             String?
   lead               Lead?          @relation(fields: [leadId], references: [id])
   clienteId          String?

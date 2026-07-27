@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
+import { parseDataHoraLocal } from "@/app/lib/parseDataHoraLocal";
 import { TipoEvento } from "@/app/generated/prisma/client";
 
 export async function createEvento(formData: FormData) {
@@ -19,8 +20,8 @@ export async function createEvento(formData: FormData) {
     data: {
       titulo,
       tipo,
-      data: new Date(dataRaw),
-      dataFim: dataFimRaw ? new Date(dataFimRaw) : null,
+      data: parseDataHoraLocal(dataRaw),
+      dataFim: dataFimRaw ? parseDataHoraLocal(dataFimRaw) : null,
       local,
       participantes,
       descricao,
@@ -46,8 +47,8 @@ export async function updateEvento(id: string, formData: FormData) {
     data: {
       titulo,
       tipo,
-      data: new Date(dataRaw),
-      dataFim: dataFimRaw ? new Date(dataFimRaw) : null,
+      data: parseDataHoraLocal(dataRaw),
+      dataFim: dataFimRaw ? parseDataHoraLocal(dataFimRaw) : null,
       local,
       participantes,
       descricao,

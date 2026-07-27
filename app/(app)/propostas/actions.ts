@@ -42,6 +42,8 @@ export async function deleteProposta(id: string) {
 
 export async function updatePropostaGeral(id: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
+  const nomeEmpresa = String(formData.get("nomeEmpresa") ?? "").trim() || null;
+  const nomeCliente = String(formData.get("nomeCliente") ?? "").trim() || null;
   const alvo = String(formData.get("alvo") ?? "").trim();
   if (!titulo) throw new Error("Título é obrigatório");
 
@@ -49,7 +51,7 @@ export async function updatePropostaGeral(id: string, formData: FormData) {
   const leadId = tipoAlvo === "lead" ? idAlvo : null;
   const clienteId = tipoAlvo === "cliente" ? idAlvo : null;
 
-  await prisma.proposta.update({ where: { id }, data: { titulo, leadId, clienteId } });
+  await prisma.proposta.update({ where: { id }, data: { titulo, nomeEmpresa, nomeCliente, leadId, clienteId } });
   revalidarProposta(id);
 }
 
@@ -149,6 +151,34 @@ export async function createEtapaCronograma(propostaId: string, formData: FormDa
 
   const count = await prisma.etapaCronogramaProposta.count({ where: { propostaId } });
   await prisma.etapaCronogramaProposta.create({ data: { propostaId, titulo, prazo, ordem: count } });
+  revalidarProposta(propostaId);
+}
+
+export async function updateEtapaCronograma(id: string, propostaId: string, titulo: string, prazo: string) {
+  if (!titulo.trim()) throw new Error("Título da etapa é obrigatório");
+  await prisma.etapaCronogramaProposta.update({
+    where: { id },
+    data: { titulo: titulo.trim(), prazo: prazo.trim() || null },
+  });
+  revalidarProposta(propostaId);
+}
+
+export async function moveEtapaCronograma(id: string, propostaId: string, direcao: "up" | "down") {
+  const etapas = await prisma.etapaCronogramaProposta.findMany({
+    where: { propostaId },
+    orderBy: { ordem: "asc" },
+  });
+  const index = etapas.findIndex((e) => e.id === id);
+  const alvoIndex = direcao === "up" ? index - 1 : index + 1;
+  if (index === -1 || alvoIndex < 0 || alvoIndex >= etapas.length) return;
+
+  const atual = etapas[index];
+  const alvo = etapas[alvoIndex];
+
+  await prisma.$transaction([
+    prisma.etapaCronogramaProposta.update({ where: { id: atual.id }, data: { ordem: alvo.ordem } }),
+    prisma.etapaCronogramaProposta.update({ where: { id: alvo.id }, data: { ordem: atual.ordem } }),
+  ]);
   revalidarProposta(propostaId);
 }
 

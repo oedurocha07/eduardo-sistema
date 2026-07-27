@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import { getConfiguracao } from "@/app/lib/configuracao";
 import { PageHeader } from "@/app/components/ui/PageHeader";
+import { RelogioSaoPaulo } from "@/app/components/ui/RelogioSaoPaulo";
 import { StatCard } from "@/app/components/ui/StatCard";
 import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
@@ -120,7 +121,7 @@ export default async function Home() {
   return (
     <div className="p-6 md:p-8">
       <p className="mb-1 text-sm text-muted capitalize">{hoje}</p>
-      <PageHeader title={`${saudacao}, ${usuario?.nome.split(" ")[0]}.`} />
+      <PageHeader title={`${saudacao}, ${usuario?.nome.split(" ")[0]}.`} titleExtra={<RelogioSaoPaulo />} />
 
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard label="Receita do mês" value={<Money value={receita} />} icon={Wallet} tone="success" />

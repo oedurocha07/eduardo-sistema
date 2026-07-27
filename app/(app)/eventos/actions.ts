@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { salvarArquivo } from "@/app/lib/storage";
+import { parseDataHoraLocal } from "@/app/lib/parseDataHoraLocal";
 import {
   StatusEvento,
   FaseChecklist,
@@ -26,8 +27,8 @@ export async function createEvento(formData: FormData) {
     data: {
       nome,
       local,
-      dataInicio: new Date(dataInicioRaw),
-      dataFim: dataFimRaw ? new Date(dataFimRaw) : null,
+      dataInicio: parseDataHoraLocal(dataInicioRaw),
+      dataFim: dataFimRaw ? parseDataHoraLocal(dataFimRaw) : null,
       clienteId,
     },
   });
@@ -78,7 +79,7 @@ export async function createBloco(eventoId: string, formData: FormData) {
   }
 
   await prisma.blocoOperacional.create({
-    data: { ambienteId, titulo, inicio: new Date(inicioRaw), fim: new Date(fimRaw), responsavel },
+    data: { ambienteId, titulo, inicio: parseDataHoraLocal(inicioRaw), fim: parseDataHoraLocal(fimRaw), responsavel },
   });
   revalidatePath(`/eventos/${eventoId}`);
 }

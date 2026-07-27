@@ -1,11 +1,87 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { CalendarRange, EyeOff, Plus, Trash2 } from "lucide-react";
-import { createEtapaCronograma, deleteEtapaCronograma, updatePropostaSemCronograma } from "../actions";
+import { useEffect, useState, useTransition } from "react";
+import { CalendarRange, ChevronDown, ChevronUp, EyeOff, Plus, Trash2 } from "lucide-react";
+import {
+  createEtapaCronograma,
+  deleteEtapaCronograma,
+  moveEtapaCronograma,
+  updateEtapaCronograma,
+  updatePropostaSemCronograma,
+} from "../actions";
 import { ETAPAS_SUGERIDAS } from "../constants";
 
 type Etapa = { id: string; titulo: string; prazo: string | null };
+
+function EtapaCard({
+  propostaId,
+  etapa,
+  isFirst,
+  isLast,
+}: {
+  propostaId: string;
+  etapa: Etapa;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
+  const [titulo, setTitulo] = useState(etapa.titulo);
+  const [prazo, setPrazo] = useState(etapa.prazo ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => setTitulo(etapa.titulo), [etapa.titulo]);
+  useEffect(() => setPrazo(etapa.prazo ?? ""), [etapa.prazo]);
+
+  function salvar() {
+    if (!titulo.trim()) return;
+    startTransition(() => updateEtapaCronograma(etapa.id, propostaId, titulo, prazo));
+  }
+
+  return (
+    <div className="group flex items-center gap-1.5 rounded-full border border-border bg-background pl-1.5 pr-3 py-1.5 text-sm">
+      <div className="flex shrink-0 flex-col">
+        <button
+          type="button"
+          disabled={isPending || isFirst}
+          onClick={() => startTransition(() => moveEtapaCronograma(etapa.id, propostaId, "up"))}
+          className="text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+        >
+          <ChevronUp size={12} />
+        </button>
+        <button
+          type="button"
+          disabled={isPending || isLast}
+          onClick={() => startTransition(() => moveEtapaCronograma(etapa.id, propostaId, "down"))}
+          className="text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+        >
+          <ChevronDown size={12} />
+        </button>
+      </div>
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <input
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          onBlur={salvar}
+          disabled={isPending}
+          className="min-w-0 flex-1 bg-transparent font-medium text-foreground outline-none"
+        />
+        <input
+          value={prazo}
+          onChange={(e) => setPrazo(e.target.value)}
+          onBlur={salvar}
+          disabled={isPending}
+          placeholder="Prazo"
+          className="w-16 shrink-0 bg-transparent text-xs text-muted outline-none placeholder:text-muted/60"
+        />
+      </div>
+      <button
+        onClick={() => startTransition(() => deleteEtapaCronograma(etapa.id, propostaId))}
+        className="shrink-0 text-muted opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
+      >
+        <Trash2 size={13} />
+      </button>
+    </div>
+  );
+}
 
 function SugestaoEtapaChip({ propostaId, titulo }: { propostaId: string; titulo: string }) {
   const [isPending, startTransition] = useTransition();
@@ -92,22 +168,14 @@ export function CronogramaSection({
             <p className="text-sm text-muted">Nenhuma etapa definida ainda.</p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              {etapas.map((etapa) => (
-                <div
+              {etapas.map((etapa, i) => (
+                <EtapaCard
                   key={etapa.id}
-                  className="group flex items-center justify-between gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm"
-                >
-                  <div className="min-w-0">
-                    <span className="truncate font-medium text-foreground">{etapa.titulo}</span>
-                    {etapa.prazo && <span className="ml-2 text-xs text-muted">{etapa.prazo}</span>}
-                  </div>
-                  <button
-                    onClick={() => startTransition(() => deleteEtapaCronograma(etapa.id, propostaId))}
-                    className="shrink-0 text-muted opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
+                  propostaId={propostaId}
+                  etapa={etapa}
+                  isFirst={i === 0}
+                  isLast={i === etapas.length - 1}
+                />
               ))}
               {sugestoesRestantes.map((titulo) => (
                 <SugestaoEtapaChip key={titulo} propostaId={propostaId} titulo={titulo} />
