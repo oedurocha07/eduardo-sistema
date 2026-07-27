@@ -34,14 +34,19 @@ export default async function ContratosPage() {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {cofres.map((cofre) => (
-            <Link key={cofre.id} href={`/contratos/${cofre.id}`} className="card hover:border-accent/50">
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="font-medium text-foreground">{cofre.apelido || cofre.nomeCompleto}</span>
-                <Badge tone="neutral">{cofre.tipo === "FISICA" ? "PF" : "PJ"}</Badge>
+            <Link key={cofre.id} href={`/contratos/${cofre.id}`} className="card flex items-start gap-3 hover:border-accent/50">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                <Shield size={18} />
               </div>
-              <div className="text-sm text-muted">
-                {cofre.documentos.length} contrato(s)
-                {cofre.documentos[0] && <> · Último: {cofre.documentos[0].createdAt.toLocaleDateString("pt-BR")}</>}
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="truncate font-medium text-foreground">{cofre.apelido || cofre.nomeCompleto}</span>
+                  <Badge tone="neutral">{cofre.tipo === "FISICA" ? "PF" : "PJ"}</Badge>
+                </div>
+                <div className="text-sm text-muted">
+                  {cofre.documentos.length} contrato(s)
+                  {cofre.documentos[0] && <> · Último: {cofre.documentos[0].createdAt.toLocaleDateString("pt-BR")}</>}
+                </div>
               </div>
             </Link>
           ))}

@@ -90,8 +90,11 @@ export default async function OrcamentosPage() {
       ) : (
         <div className="flex flex-col gap-2">
           {orcamentos.map((o) => (
-            <Link key={o.id} href={`/orcamentos/${o.id}`} className="card group flex items-center justify-between">
-              <div className="min-w-0">
+            <Link key={o.id} href={`/orcamentos/${o.id}`} className="card group flex items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                <Calculator size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 font-medium text-foreground group-hover:text-accent-hover">
                   {o.nome}
                   <ArrowRight size={13} className="opacity-0 transition-opacity group-hover:opacity-100" />
@@ -101,7 +104,7 @@ export default async function OrcamentosPage() {
                   {(o.lead?.empresa.nome ?? o.cliente?.empresa.nome) && <> · {o.lead?.empresa.nome ?? o.cliente?.empresa.nome}</>}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <Money value={precoSugerido(o)} className="font-semibold text-foreground" />
                 <div className="mt-0.5">
                   <Badge tone="neutral">{o.itens.length} item(ns)</Badge>

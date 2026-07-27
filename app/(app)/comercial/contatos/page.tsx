@@ -38,7 +38,14 @@ export default async function ContatosPage() {
             <tbody>
               {contatos.map((contato) => (
                 <tr key={contato.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                  <td className="px-4 py-3 font-medium text-foreground">{contato.nome}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <div className="flex items-center gap-2.5">
+                      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                        <Contact size={13} />
+                      </div>
+                      {contato.nome}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-muted">{contato.empresa.nome}</td>
                   <td className="px-4 py-3 text-muted">{contato.cargo ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{contato.email ?? "—"}</td>

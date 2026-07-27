@@ -55,7 +55,14 @@ export default async function EmpresasPage({
             <tbody>
               {empresas.map((empresa) => (
                 <tr key={empresa.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                  <td className="px-4 py-3 font-medium text-foreground">{empresa.nome}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <div className="flex items-center gap-2.5">
+                      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                        <Building2 size={13} />
+                      </div>
+                      {empresa.nome}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-muted">{empresa.cidade ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{empresa.segmento ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{empresa._count.leads}</td>
