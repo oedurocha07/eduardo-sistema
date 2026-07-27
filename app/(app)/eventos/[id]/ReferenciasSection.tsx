@@ -13,7 +13,7 @@ export function ReferenciasSection({ eventoId, referencias }: { eventoId: string
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-foreground">Referências</h2>
           <p className="text-sm text-muted">Briefings, mapas, roteiros, links e arquivos da operação.</p>

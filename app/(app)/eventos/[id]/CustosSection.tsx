@@ -18,7 +18,7 @@ export function CustosSection({ eventoId, custos }: { eventoId: string; custos: 
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-foreground">Custos da operação</h2>
           <p className="text-sm text-muted">Cachês, adicionais e equipamentos antes de levar ao financeiro.</p>

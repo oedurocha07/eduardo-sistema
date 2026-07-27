@@ -18,7 +18,7 @@ export function ChecklistSection({ eventoId, itens }: { eventoId: string; itens:
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-foreground">Checklists</h2>
           <p className="text-sm text-muted">Preparação, montagem, operação e encerramento.</p>

@@ -16,7 +16,7 @@ export function EquipamentosSection({ eventoId, equipamentos }: { eventoId: stri
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-foreground">Equipamentos e responsáveis</h2>
           <p className="text-sm text-muted">O que vai para o evento, com quem está e o que ainda falta.</p>
