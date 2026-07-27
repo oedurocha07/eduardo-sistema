@@ -7,9 +7,17 @@ import { Money } from "@/app/components/ui/Money";
 import { Badge } from "@/app/components/ui/Badge";
 import { ConfiguracaoPrecosModal } from "./ConfiguracaoPrecosModal";
 import { CATEGORIAS_ORCAMENTO } from "./constants";
-import { Calculator, ArrowRight, Bookmark } from "lucide-react";
+import { Calculator, ArrowRight, Bookmark, Video, Scissors, Radio, Smartphone, Sparkles, LucideIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+const ICONE_CATEGORIA: Record<string, LucideIcon> = {
+  "Diária de Filmagem": Video,
+  Edição: Scissors,
+  "Cobertura de Evento": Radio,
+  "Conteúdo Mensal": Smartphone,
+  "Projeto Personalizado": Sparkles,
+};
 
 export default async function OrcamentosPage() {
   const [orcamentos, templates, catalogo] = await Promise.all([
@@ -52,20 +60,26 @@ export default async function OrcamentosPage() {
       />
 
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {CATEGORIAS_ORCAMENTO.map((cat) => (
-          <form key={cat.valor} action={createOrcamento}>
-            <input type="hidden" name="nome" value={cat.valor} />
-            <input type="hidden" name="categoria" value={cat.valor} />
-            <button type="submit" className="card group flex w-full flex-col items-start gap-1 text-left hover:border-accent/50">
-              <span className="font-semibold text-foreground">{cat.valor}</span>
-              <span className="text-xs text-muted">{cat.descricao}</span>
-              <span className="mt-2 flex items-center gap-1 text-xs text-accent-hover">
-                Começar
-                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </button>
-          </form>
-        ))}
+        {CATEGORIAS_ORCAMENTO.map((cat) => {
+          const Icone = ICONE_CATEGORIA[cat.valor] ?? Sparkles;
+          return (
+            <form key={cat.valor} action={createOrcamento}>
+              <input type="hidden" name="nome" value={cat.valor} />
+              <input type="hidden" name="categoria" value={cat.valor} />
+              <button type="submit" className="card group flex w-full flex-col items-start gap-2 text-left hover:border-accent/50">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                  <Icone size={18} />
+                </div>
+                <span className="font-semibold text-foreground">{cat.valor}</span>
+                <span className="text-xs text-muted">{cat.descricao}</span>
+                <span className="mt-2 flex items-center gap-1 text-xs text-accent-hover">
+                  Começar
+                  <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </button>
+            </form>
+          );
+        })}
       </div>
 
       {templates.length > 0 && (
@@ -75,9 +89,14 @@ export default async function OrcamentosPage() {
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((t) => (
-              <Link key={t.id} href={`/orcamentos/${t.id}`} className="card hover:border-accent/50">
-                <div className="font-medium text-foreground">{t.nome}</div>
-                <div className="text-xs text-muted">{t.itens.length} item(ns)</div>
+              <Link key={t.id} href={`/orcamentos/${t.id}`} className="card flex items-center gap-3 hover:border-accent/50">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                  <Bookmark size={15} />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-foreground">{t.nome}</div>
+                  <div className="text-xs text-muted">{t.itens.length} item(ns)</div>
+                </div>
               </Link>
             ))}
           </div>
