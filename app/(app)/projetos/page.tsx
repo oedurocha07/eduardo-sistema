@@ -159,34 +159,31 @@ export default async function ProjetosPage({
       )}
 
       {view === "lista" && (
-        <div className="card overflow-x-auto p-0">
+        <div>
           {projetos.length === 0 ? (
             <EmptyState icon={FolderKanban} title="Nenhum projeto encontrado" />
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-border text-xs text-muted uppercase">
-                  <th className="px-4 py-3 font-medium">Projeto</th>
-                  <th className="px-4 py-3 font-medium">Cliente</th>
-                  <th className="px-4 py-3 font-medium">Entrega</th>
-                  <th className="px-4 py-3 font-medium">Etapa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projetos.map((p) => (
-                  <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface-hover">
-                    <td className="px-4 py-3 font-medium text-foreground">{p.nome}</td>
-                    <td className="px-4 py-3 text-muted">{p.cliente.empresa.nome}</td>
-                    <td className="px-4 py-3 text-muted">
-                      {p.dataEntrega ? p.dataEntrega.toLocaleDateString("pt-BR") : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <ProjetoStatusSelect id={p.id} status={p.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="flex flex-col gap-2">
+              {projetos.map((p) => (
+                <div key={p.id} className="card flex items-center gap-3">
+                  <Link href={`/projetos/${p.clienteId}`} className="group flex min-w-0 flex-1 items-center gap-3">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+                      <FolderKanban size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-foreground group-hover:text-accent-hover">{p.nome}</div>
+                      <div className="truncate text-sm text-muted">
+                        {p.cliente.empresa.nome}
+                        {p.dataEntrega && <> · Entrega {p.dataEntrega.toLocaleDateString("pt-BR")}</>}
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="w-40 shrink-0">
+                    <ProjetoStatusSelect id={p.id} status={p.status} />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
