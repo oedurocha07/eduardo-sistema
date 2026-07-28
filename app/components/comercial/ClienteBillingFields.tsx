@@ -23,28 +23,28 @@ export type Defaults = {
   observacoes?: string | null;
 };
 
-// Códigos usados de verdade nas notas fiscais emitidas pelo Asaas. NBS e Código de
-// tributação nacional dos serviços de audiovisual (13.03.01.001/.002) ainda não têm
-// o texto oficial completo confirmado — ficam em branco até isso ser confirmado,
-// pra nunca gravar um texto fiscal incompleto/inventado.
+// Códigos usados de verdade nas notas fiscais emitidas pelo Asaas. Texto de tributação
+// nacional confirmado na Lista de Serviços anexa à LC 116/2003 (itens 13.03 e 17.06) e
+// NBS confirmado na tabela oficial do MDIC (NBSa_2-0.csv).
 const SERVICOS_PRESET = [
   {
     label: "Serviços de marketing (17.06.01.001)",
     codigo: "17.06.01.001",
-    tributacao: "170601 - Propaganda e publicidade, inclusive promoção de vendas, planejamento de campanhas ou sistemas de publicidade, elaboração de desenhos, textos e demais materiais publicitários.",
+    tributacao:
+      "170601 - Propaganda e publicidade, inclusive promoção de vendas, planejamento de campanhas ou sistemas de publicidade, elaboração de desenhos, textos e demais materiais publicitários.",
     nbs: "1.1406.12.00 - Serviços de marketing direto e mala direta",
   },
   {
     label: "Serviços gerais de audiovisual (13.03.01.001)",
     codigo: "13.03.01.001",
-    tributacao: "",
-    nbs: "",
+    tributacao: "130301 - Fotografia e cinematografia, inclusive revelação, ampliação, cópia, reprodução, trucagem e congêneres.",
+    nbs: "1.2501.90.00 - Serviços de produção audiovisual, de apoio e relacionados não classificados em subposições anteriores",
   },
   {
     label: "Cobertura de eventos (13.03.01.002)",
     codigo: "13.03.01.002",
-    tributacao: "",
-    nbs: "",
+    tributacao: "130301 - Fotografia e cinematografia, inclusive revelação, ampliação, cópia, reprodução, trucagem e congêneres.",
+    nbs: "1.2501.90.00 - Serviços de produção audiovisual, de apoio e relacionados não classificados em subposições anteriores",
   },
 ];
 
