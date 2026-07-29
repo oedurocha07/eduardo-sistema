@@ -47,6 +47,7 @@ export function NewPropostaForm({
             <form ref={formRef} action={createProposta} className="flex flex-col gap-3">
               <input name="titulo" placeholder="Nome do projeto *" required className="input" />
               <ClienteSelect clientesRecorrentes={clientesRecorrentes} clientesFreela={clientesFreela} />
+              <input name="nomeManual" placeholder="Ou digite o nome do cliente (se não estiver na base)" className="input" />
               <div className="mt-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
                   Cancelar

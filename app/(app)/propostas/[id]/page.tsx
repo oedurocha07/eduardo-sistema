@@ -58,6 +58,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
             propostaId={proposta.id}
             titulo={proposta.titulo}
             alvoAtual={alvoAtual}
+            nomeManual={proposta.nomeEmpresa ?? ""}
             clientesRecorrentes={clientesRecorrentes.map((c) => ({ id: c.id, label: c.nome }))}
             clientesFreela={clientesFreela.map((c) => ({ id: c.id, label: c.empresa.nome }))}
           />

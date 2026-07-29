@@ -15,13 +15,15 @@ function revalidarProposta(id: string) {
 export async function createProposta(formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const alvo = String(formData.get("alvo") ?? "").trim();
+  const nomeManual = String(formData.get("nomeManual") ?? "").trim() || null;
 
   if (!titulo) throw new Error("Título é obrigatório");
 
   const { clienteId, clienteRecorrenteId } = parseClienteAlvo(alvo);
+  const nomeEmpresa = !clienteId && !clienteRecorrenteId ? nomeManual : null;
 
   const proposta = await prisma.proposta.create({
-    data: { titulo, clienteId, clienteRecorrenteId },
+    data: { titulo, clienteId, clienteRecorrenteId, nomeEmpresa },
   });
 
   revalidatePath("/propostas");
@@ -42,11 +44,17 @@ export async function deleteProposta(id: string) {
 export async function updatePropostaGeral(id: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const alvo = String(formData.get("alvo") ?? "").trim();
+  const nomeManual = String(formData.get("nomeManual") ?? "").trim() || null;
   if (!titulo) throw new Error("Título é obrigatório");
 
   const { clienteId, clienteRecorrenteId } = parseClienteAlvo(alvo);
+  // Nome manual só vale quando nenhum cliente da base foi selecionado.
+  const nomeEmpresa = !clienteId && !clienteRecorrenteId ? nomeManual : null;
 
-  await prisma.proposta.update({ where: { id }, data: { titulo, clienteId, clienteRecorrenteId, leadId: null } });
+  await prisma.proposta.update({
+    where: { id },
+    data: { titulo, clienteId, clienteRecorrenteId, nomeEmpresa, leadId: null },
+  });
   revalidarProposta(id);
 }
 

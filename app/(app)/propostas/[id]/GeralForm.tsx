@@ -10,12 +10,14 @@ export function GeralForm({
   propostaId,
   titulo,
   alvoAtual,
+  nomeManual,
   clientesRecorrentes,
   clientesFreela,
 }: {
   propostaId: string;
   titulo: string;
   alvoAtual: string;
+  nomeManual: string;
   clientesRecorrentes: Opcao[];
   clientesFreela: Opcao[];
 }) {
@@ -37,6 +39,11 @@ export function GeralForm({
           clientesRecorrentes={clientesRecorrentes}
           clientesFreela={clientesFreela}
         />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-muted">Ou digite o nome do cliente (se ele ainda não estiver na base)</label>
+        <input name="nomeManual" defaultValue={nomeManual} placeholder="Ex: João Silva" className="input" />
+        <p className="text-xs text-muted">Só é usado se nenhum cliente for selecionado acima.</p>
       </div>
       <button type="submit" disabled={isPending} className="btn-primary self-start">
         {isPending ? "Salvando..." : "Salvar"}
