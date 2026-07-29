@@ -12,7 +12,16 @@ type ClientePayload = {
   nome: string;
   cnpjCpf?: string | null;
   email?: string | null;
+  // Campo legado: quando enviado, é tratado como CEP (era o único dado real que esse
+  // campo continha nas importações antigas do Notion).
   endereco?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  uf?: string | null;
   status: "ATIVO" | "PAUSADO" | "ENCERRADO";
   valorMensal?: number | null;
   diaVencimento?: number | null;
@@ -34,13 +43,23 @@ export async function POST(request: Request) {
   const clientes: ClientePayload[] = await request.json();
 
   for (const c of clientes) {
+    const endereco = {
+      cep: c.cep ?? c.endereco ?? null,
+      logradouro: c.logradouro ?? null,
+      numero: c.numero ?? null,
+      complemento: c.complemento ?? null,
+      bairro: c.bairro ?? null,
+      cidade: c.cidade ?? null,
+      uf: c.uf ?? null,
+    };
+
     const cliente = await prisma.clienteRecorrente.upsert({
       where: { notionId: c.notionId },
       update: {
         nome: c.nome,
         cnpjCpf: c.cnpjCpf,
         email: c.email,
-        endereco: c.endereco,
+        ...endereco,
         status: c.status,
         valorMensal: c.valorMensal,
         diaVencimento: c.diaVencimento,
@@ -57,7 +76,7 @@ export async function POST(request: Request) {
         nome: c.nome,
         cnpjCpf: c.cnpjCpf,
         email: c.email,
-        endereco: c.endereco,
+        ...endereco,
         status: c.status,
         valorMensal: c.valorMensal,
         diaVencimento: c.diaVencimento,

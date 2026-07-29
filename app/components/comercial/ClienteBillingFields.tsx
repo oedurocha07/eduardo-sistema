@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
+import { buscarEnderecoPorCep } from "@/app/lib/cep";
 
 export type Defaults = {
   nome?: string;
   cnpjCpf?: string | null;
   email?: string | null;
-  endereco?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  uf?: string | null;
   status?: string;
   recorrente?: boolean;
   valorMensal?: number | string | null;
@@ -74,6 +81,29 @@ export function ClienteBillingFields({
     return new Date(hoje.getFullYear(), hoje.getMonth(), defaults.diaVencimento).toISOString().slice(0, 10);
   });
 
+  const [cep, setCep] = useState(defaults.cep ?? "");
+  const [logradouro, setLogradouro] = useState(defaults.logradouro ?? "");
+  const [numero, setNumero] = useState(defaults.numero ?? "");
+  const [complemento, setComplemento] = useState(defaults.complemento ?? "");
+  const [bairro, setBairro] = useState(defaults.bairro ?? "");
+  const [cidade, setCidade] = useState(defaults.cidade ?? "");
+  const [uf, setUf] = useState(defaults.uf ?? "");
+  const [buscandoCep, setBuscandoCep] = useState(false);
+
+  async function handleCepBlur() {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setBuscandoCep(true);
+    const resultado = await buscarEnderecoPorCep(digits);
+    setBuscandoCep(false);
+    if (resultado) {
+      setLogradouro(resultado.logradouro);
+      setBairro(resultado.bairro);
+      setCidade(resultado.cidade);
+      setUf(resultado.uf);
+    }
+  }
+
   function selecionarPreset(v: string) {
     setPresetKey(v);
     if (v === "outro" || v === "") return;
@@ -115,7 +145,54 @@ export function ClienteBillingFields({
 
       <input name="email" defaultValue={defaults.email ?? ""} placeholder="E-mail" className="input" />
       <input name="cnpjCpf" defaultValue={defaults.cnpjCpf ?? ""} placeholder="CNPJ/CPF" className="input" />
-      <input name="endereco" defaultValue={defaults.endereco ?? ""} placeholder="Endereço/CEP" className="input col-span-2" />
+
+      <div className="flex items-center gap-2">
+        <input
+          name="cep"
+          value={cep}
+          onChange={(e) => setCep(e.target.value)}
+          onBlur={handleCepBlur}
+          placeholder="CEP"
+          className="input"
+        />
+        {buscandoCep && <Loader2 size={14} className="shrink-0 animate-spin text-muted" />}
+      </div>
+      <input
+        name="bairro"
+        value={bairro}
+        onChange={(e) => setBairro(e.target.value)}
+        placeholder="Bairro"
+        className="input"
+      />
+      <input
+        name="logradouro"
+        value={logradouro}
+        onChange={(e) => setLogradouro(e.target.value)}
+        placeholder="Rua / Logradouro"
+        className="input col-span-2"
+      />
+      <input
+        name="numero"
+        value={numero}
+        onChange={(e) => setNumero(e.target.value)}
+        placeholder="Número"
+        className="input"
+      />
+      <input
+        name="complemento"
+        value={complemento}
+        onChange={(e) => setComplemento(e.target.value)}
+        placeholder="Complemento"
+        className="input"
+      />
+      <input
+        name="cidade"
+        value={cidade}
+        onChange={(e) => setCidade(e.target.value)}
+        placeholder="Cidade"
+        className="input"
+      />
+      <input name="uf" value={uf} onChange={(e) => setUf(e.target.value.toUpperCase())} placeholder="UF" maxLength={2} className="input" />
 
       <select name="status" defaultValue={defaults.status ?? "ATIVO"} className="input">
         <option value="ATIVO">Ativo</option>

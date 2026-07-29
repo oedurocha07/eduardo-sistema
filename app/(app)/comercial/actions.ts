@@ -45,7 +45,12 @@ export async function createLead(formData: FormData) {
 
   const recorrente = formData.get("recorrente") === "on";
   const cnpjCpf = parseStr(formData.get("cnpjCpf"));
-  const endereco = parseStr(formData.get("endereco"));
+  const cep = parseStr(formData.get("cep"));
+  const logradouro = parseStr(formData.get("logradouro"));
+  const numero = parseStr(formData.get("numero"));
+  const complemento = parseStr(formData.get("complemento"));
+  const bairro = parseStr(formData.get("bairro"));
+  const uf = parseStr(formData.get("uf"));
   const status = (formData.get("status") as StatusClienteRecorrente) ?? "ATIVO";
   const valorMensal = parseNum(formData.get("valorMensal"));
   const diaVencimento = parseNum(formData.get("diaVencimento"));
@@ -86,7 +91,13 @@ export async function createLead(formData: FormData) {
     nome: empresaNome,
     cnpjCpf,
     email,
-    endereco,
+    cep,
+    logradouro,
+    numero,
+    complemento,
+    bairro,
+    cidade,
+    uf,
     status,
     recorrente,
     valorMensal,

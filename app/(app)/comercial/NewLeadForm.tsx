@@ -2,13 +2,13 @@
 
 import { useState, useRef } from "react";
 import { createLead } from "./actions";
-import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
+import { ClienteBillingFields, type Defaults } from "@/app/components/comercial/ClienteBillingFields";
 import { CartaoCnpjUpload } from "@/app/components/comercial/CartaoCnpjUpload";
 import { Plus, X } from "lucide-react";
 
 export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onClose: () => void } }) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [extraido, setExtraido] = useState<{ nome?: string; cnpjCpf?: string; endereco?: string }>({});
+  const [extraido, setExtraido] = useState<Defaults>({});
   const [formKey, setFormKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const open = controlled ? controlled.open : internalOpen;
@@ -48,7 +48,13 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
                   setExtraido({
                     nome: dados.nome ?? undefined,
                     cnpjCpf: dados.cnpj ?? undefined,
-                    endereco: dados.endereco ?? undefined,
+                    cep: dados.cep,
+                    logradouro: dados.logradouro,
+                    numero: dados.numero,
+                    complemento: dados.complemento,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    uf: dados.uf,
                   });
                   setFormKey((k) => k + 1);
                 }}
@@ -59,7 +65,6 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
                 <input name="contato" placeholder="Contato *" required className="input" />
                 <input name="telefone" placeholder="Telefone" className="input" />
                 <input name="origem" placeholder="Origem" className="input" />
-                <input name="cidade" placeholder="Cidade" className="input" />
                 <input name="segmento" placeholder="Segmento" className="input" />
                 <select name="temperatura" defaultValue="MORNO" className="input">
                   <option value="FRIO">Frio</option>

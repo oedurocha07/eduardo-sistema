@@ -2,13 +2,13 @@
 
 import { useState, useRef } from "react";
 import { createCliente } from "./actions";
-import { ClienteBillingFields } from "@/app/components/comercial/ClienteBillingFields";
+import { ClienteBillingFields, type Defaults } from "@/app/components/comercial/ClienteBillingFields";
 import { CartaoCnpjUpload } from "@/app/components/comercial/CartaoCnpjUpload";
 import { Plus, X } from "lucide-react";
 
 export function NewClienteForm({ controlled }: { controlled?: { open: boolean; onClose: () => void } }) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [extraido, setExtraido] = useState<{ nome?: string; cnpjCpf?: string; endereco?: string }>({});
+  const [extraido, setExtraido] = useState<Defaults>({});
   const [formKey, setFormKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const open = controlled ? controlled.open : internalOpen;
@@ -47,7 +47,13 @@ export function NewClienteForm({ controlled }: { controlled?: { open: boolean; o
                   setExtraido({
                     nome: dados.nome ?? undefined,
                     cnpjCpf: dados.cnpj ?? undefined,
-                    endereco: dados.endereco ?? undefined,
+                    cep: dados.cep,
+                    logradouro: dados.logradouro,
+                    numero: dados.numero,
+                    complemento: dados.complemento,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    uf: dados.uf,
                   });
                   setFormKey((k) => k + 1);
                 }}

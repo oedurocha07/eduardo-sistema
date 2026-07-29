@@ -1,7 +1,13 @@
 export type DadosCartaoCnpj = {
   nome: string | null;
   cnpj: string | null;
-  endereco: string | null;
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
 };
 
 function limparEspacos(s: string) {
@@ -74,19 +80,17 @@ export async function extrairDadosCartaoCnpj(buffer: Buffer): Promise<DadosCarta
 
   const cepBlocoTexto = inicioEndereco === -1 ? texto : linhas.slice(inicioEndereco, fimEndereco).join(" ");
   const cepMatch = cepBlocoTexto.match(/\d{2}\.?\d{3}-\d{3}/);
-  const cep = cepMatch ? cepMatch[0] : null;
-
-  const partesEndereco = [
-    [logradouro, numero].filter(Boolean).join(", "),
-    complemento,
-    bairro,
-    municipio && uf ? `${municipio}/${uf}` : municipio,
-    cep ? `CEP ${cep}` : null,
-  ].filter((p): p is string => Boolean(p));
+  const cep = cepMatch ? cepMatch[0].replace(/\D/g, "") : null;
 
   return {
     nome: nome ? limparEspacos(nome) : null,
     cnpj,
-    endereco: partesEndereco.length ? partesEndereco.join(" - ") : null,
+    cep,
+    logradouro: logradouro ? limparEspacos(logradouro) : null,
+    numero: numero ? limparEspacos(numero) : null,
+    complemento: complemento ? limparEspacos(complemento) : null,
+    bairro: bairro ? limparEspacos(bairro) : null,
+    cidade: municipio ? limparEspacos(municipio) : null,
+    uf: uf ? limparEspacos(uf) : null,
   };
 }

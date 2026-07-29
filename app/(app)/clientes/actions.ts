@@ -16,6 +16,18 @@ function parseStr(v: FormDataEntryValue | null): string | null {
   return s || null;
 }
 
+function parseEndereco(formData: FormData) {
+  return {
+    cep: parseStr(formData.get("cep")),
+    logradouro: parseStr(formData.get("logradouro")),
+    numero: parseStr(formData.get("numero")),
+    complemento: parseStr(formData.get("complemento")),
+    bairro: parseStr(formData.get("bairro")),
+    cidade: parseStr(formData.get("cidade")),
+    uf: parseStr(formData.get("uf")),
+  };
+}
+
 export async function createCliente(formData: FormData) {
   const nome = parseStr(formData.get("nome"));
   if (!nome) throw new Error("Nome é obrigatório");
@@ -28,7 +40,7 @@ export async function createCliente(formData: FormData) {
       nome,
       cnpjCpf,
       email,
-      endereco: parseStr(formData.get("endereco")),
+      ...parseEndereco(formData),
       status: (formData.get("status") as StatusClienteRecorrente) ?? "ATIVO",
       recorrente: formData.get("recorrente") === "on",
       valorMensal: parseNum(formData.get("valorMensal")),
@@ -73,7 +85,18 @@ export async function createCliente(formData: FormData) {
 }
 
 type ResultadoExtracaoCnpj =
-  | { ok: true; nome: string | null; cnpj: string | null; endereco: string | null }
+  | {
+      ok: true;
+      nome: string | null;
+      cnpj: string | null;
+      cep: string | null;
+      logradouro: string | null;
+      numero: string | null;
+      complemento: string | null;
+      bairro: string | null;
+      cidade: string | null;
+      uf: string | null;
+    }
   | { ok: false; erro: string };
 
 export async function extrairCartaoCnpj(formData: FormData): Promise<ResultadoExtracaoCnpj> {
@@ -108,7 +131,7 @@ export async function updateCliente(formData: FormData) {
       nome,
       cnpjCpf: parseStr(formData.get("cnpjCpf")),
       email: parseStr(formData.get("email")),
-      endereco: parseStr(formData.get("endereco")),
+      ...parseEndereco(formData),
       status: (formData.get("status") as StatusClienteRecorrente) ?? "ATIVO",
       recorrente: formData.get("recorrente") === "on",
       valorMensal: parseNum(formData.get("valorMensal")),

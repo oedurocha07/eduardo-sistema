@@ -22,7 +22,13 @@ type Cliente = {
   nome: string;
   cnpjCpf: string | null;
   email: string | null;
-  endereco: string | null;
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
   status: StatusClienteRecorrente;
   recorrente: boolean;
   valorMensal: number | null;
@@ -32,6 +38,7 @@ type Cliente = {
   descricaoServico: string | null;
   descricaoNbs: string | null;
   codigoServicoMunicipal: string | null;
+  codigoTributacaoNacional: string | null;
   idClienteAsaas: string | null;
   enviarFaturaLocacao: boolean;
   observacoes: string | null;

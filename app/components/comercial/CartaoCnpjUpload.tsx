@@ -4,7 +4,17 @@ import { useRef, useState, useTransition } from "react";
 import { FileUp, Loader2 } from "lucide-react";
 import { extrairCartaoCnpj } from "@/app/(app)/clientes/actions";
 
-type Extraido = { nome: string | null; cnpj: string | null; endereco: string | null };
+type Extraido = {
+  nome: string | null;
+  cnpj: string | null;
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+};
 
 export function CartaoCnpjUpload({ onExtraido }: { onExtraido: (dados: Extraido) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
