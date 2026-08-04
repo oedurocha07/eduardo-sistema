@@ -203,7 +203,7 @@ export default async function FinanceiroPage({
                   <div className="min-w-0">
                     <div className="truncate text-foreground">{l.descricao}</div>
                     <div className="text-xs text-muted">
-                      {l.vencimento.toLocaleDateString("pt-BR")}
+                      {l.vencimento.toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                       {l.cliente && <> · {l.cliente.empresa.nome}</>}
                     </div>
                   </div>

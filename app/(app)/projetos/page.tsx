@@ -176,7 +176,7 @@ export default async function ProjetosPage({
                       <div className="truncate font-medium text-foreground group-hover:text-accent-hover">{p.nome}</div>
                       <div className="truncate text-sm text-muted">
                         {p.cliente.empresa.nome}
-                        {p.dataEntrega && <> · Entrega {p.dataEntrega.toLocaleDateString("pt-BR")}</>}
+                        {p.dataEntrega && <> · Entrega {p.dataEntrega.toLocaleDateString("pt-BR", { timeZone: "UTC" })}</>}
                       </div>
                     </div>
                   </Link>

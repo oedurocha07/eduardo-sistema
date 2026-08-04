@@ -201,7 +201,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               <div>
                 <div className="font-medium text-foreground">{l.descricao}</div>
                 <div className="text-xs text-muted">
-                  {l.vencimento.toLocaleDateString("pt-BR")} · {l.status}
+                  {l.vencimento.toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {l.status}
                 </div>
               </div>
               <Money value={Number(l.valor)} className={l.tipo === "RECEITA" ? "text-success" : "text-danger"} />

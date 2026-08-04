@@ -74,7 +74,7 @@ export function EquipeSection({ eventoId, membros }: { eventoId: string; membros
                     <div className="min-w-0">
                       <div className="truncate font-medium text-foreground">{m.nome}</div>
                       <div className="text-xs text-muted">
-                        {m.diaISO && new Date(m.diaISO).toLocaleDateString("pt-BR")}
+                        {m.diaISO && new Date(m.diaISO).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                         {m.contato && <> · {m.contato}</>}
                       </div>
                       {m.cache != null && (

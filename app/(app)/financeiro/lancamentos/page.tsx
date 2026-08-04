@@ -127,7 +127,7 @@ export default async function LancamentosPage({
                   </td>
                   <td className="px-4 py-3 text-muted">{l.categoria ?? "—"}</td>
                   <td className="px-4 py-3 text-muted">{l.projeto?.nome ?? l.cliente?.empresa.nome ?? "—"}</td>
-                  <td className="px-4 py-3 text-muted">{l.vencimento.toLocaleDateString("pt-BR")}</td>
+                  <td className="px-4 py-3 text-muted">{l.vencimento.toLocaleDateString("pt-BR", { timeZone: "UTC" })}</td>
                   <td className="px-4 py-3 text-muted">
                     <div className="flex items-center gap-1.5">
                       <span>{l.formaPagamento ?? "—"}</span>

@@ -108,7 +108,7 @@ export default async function ClienteWorkspacePage({
                   <div key={l.id} className="card flex items-center justify-between p-3">
                     <div className="min-w-0">
                       <div className="truncate text-sm text-foreground">{l.descricao}</div>
-                      <div className="text-xs text-muted">{l.vencimento.toLocaleDateString("pt-BR")}</div>
+                      <div className="text-xs text-muted">{l.vencimento.toLocaleDateString("pt-BR", { timeZone: "UTC" })}</div>
                     </div>
                     <Money value={Number(l.valor)} className={l.tipo === "RECEITA" ? "text-success" : "text-danger"} />
                   </div>

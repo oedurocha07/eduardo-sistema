@@ -74,7 +74,7 @@ export default async function ProjetoDetalhePage({
             <CalendarClock size={12} /> Prazo geral
           </div>
           <div className="mt-1 text-xl font-bold text-foreground">
-            {projeto.dataEntrega ? projeto.dataEntrega.toLocaleDateString("pt-BR") : "—"}
+            {projeto.dataEntrega ? projeto.dataEntrega.toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—"}
           </div>
         </div>
         <div className="card">

@@ -29,7 +29,7 @@ export function TarefasList({ projetoId, tarefas }: { projetoId: string; tarefas
               <span className={`flex-1 ${t.concluida ? "text-muted line-through" : "text-foreground"}`}>{t.titulo}</span>
               {t.prazo && (
                 <span className={`text-xs ${atrasada ? "text-danger" : "text-muted"}`}>
-                  {t.prazo.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                  {t.prazo.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" })}
                 </span>
               )}
               <button

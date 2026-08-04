@@ -285,7 +285,7 @@ export default async function Home() {
                   </div>
                   {lead.proximaAcaoEm && (
                     <Badge tone={atrasado ? "danger" : "neutral"}>
-                      {lead.proximaAcaoEm.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                      {lead.proximaAcaoEm.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" })}
                     </Badge>
                   )}
                 </Link>
@@ -318,7 +318,7 @@ export default async function Home() {
                   </div>
                   {t.prazo && (
                     <Badge tone={atrasada ? "danger" : "neutral"}>
-                      {t.prazo.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                      {t.prazo.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" })}
                     </Badge>
                   )}
                 </Link>
@@ -368,7 +368,7 @@ export default async function Home() {
                 <CalendarClock size={14} className="shrink-0 text-muted" />
                 <span className="min-w-0 flex-1 truncate text-foreground">{ev.titulo}</span>
                 <span className="shrink-0 text-xs text-muted">
-                  {ev.data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                  {ev.data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" })}
                 </span>
               </div>
             ))}

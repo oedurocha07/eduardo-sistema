@@ -35,7 +35,7 @@ export default async function FollowupsPage() {
                 <div className="text-right">
                   <div className="text-sm text-foreground">{lead.proximaAcao}</div>
                   {lead.proximaAcaoEm && (
-                    <div className="text-xs text-muted">{lead.proximaAcaoEm.toLocaleDateString("pt-BR")}</div>
+                    <div className="text-xs text-muted">{lead.proximaAcaoEm.toLocaleDateString("pt-BR", { timeZone: "UTC" })}</div>
                   )}
                 </div>
                 <LimparProximaAcaoButton leadId={lead.id} />

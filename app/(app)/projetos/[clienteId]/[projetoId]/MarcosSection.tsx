@@ -46,7 +46,7 @@ export function MarcosSection({
                 {item.titulo}
               </span>
               {item.data && (
-                <span className="text-xs text-muted">{item.data.toLocaleDateString("pt-BR")}</span>
+                <span className="text-xs text-muted">{item.data.toLocaleDateString("pt-BR", { timeZone: "UTC" })}</span>
               )}
               <button
                 onClick={() => startTransition(() => deleteMarco(item.id, clienteId, projetoId))}
