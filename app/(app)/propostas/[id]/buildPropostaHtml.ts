@@ -4,7 +4,7 @@ type Item = { id: string; titulo: string; detalhe: string | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
+const dataBR = (d: Date) => d.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 
 function esc(s: string): string {
   return s

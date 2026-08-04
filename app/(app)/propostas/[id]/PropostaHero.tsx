@@ -5,7 +5,7 @@ import { DeletePropostaButton } from "../DeletePropostaButton";
 import { StatusProposta } from "@/app/generated/prisma/client";
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
+const dataBR = (d: Date) => d.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 
 export function PropostaHero({
   propostaId,
