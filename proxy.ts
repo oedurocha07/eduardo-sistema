@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/api/clientes-recorrentes/import",
   "/api/v1/clientes-recorrentes",
   "/api/v1/lancamentos",
+  "/api/v1/agenda/sync",
   "/manifest.webmanifest",
   "/icon.svg",
   "/apple-icon.png",

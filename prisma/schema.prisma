@@ -361,6 +361,7 @@ model Evento {
   local         String?
   participantes String?
   descricao     String?
+  notionPageId  String?    @unique
   createdAt     DateTime   @default(now())
 }
 
