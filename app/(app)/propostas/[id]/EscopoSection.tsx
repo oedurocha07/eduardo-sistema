@@ -1,15 +1,25 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Circle, CircleCheck, Package, Plus, Trash2 } from "lucide-react";
-import { createItemEscopo, deleteItemEscopo, updateItemEscopo } from "../actions";
+import { ChevronDown, ChevronUp, Circle, CircleCheck, Package, Plus, Trash2 } from "lucide-react";
+import { createItemEscopo, deleteItemEscopo, moveItemEscopo, updateItemEscopo } from "../actions";
 import { ENTREGAS_SUGERIDAS } from "../constants";
 
 type Item = { id: string; titulo: string; detalhe: string | null; custoInterno: number | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function ItemEscopoCard({ propostaId, item }: { propostaId: string; item: Item }) {
+function ItemEscopoCard({
+  propostaId,
+  item,
+  isFirst,
+  isLast,
+}: {
+  propostaId: string;
+  item: Item;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   const [titulo, setTitulo] = useState(item.titulo);
   const [detalhe, setDetalhe] = useState(item.detalhe ?? "");
   const [custoInterno, setCustoInterno] = useState(item.custoInterno != null ? String(item.custoInterno) : "");
@@ -26,6 +36,24 @@ function ItemEscopoCard({ propostaId, item }: { propostaId: string; item: Item }
 
   return (
     <div className="group flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+      <div className="flex shrink-0 flex-col">
+        <button
+          type="button"
+          disabled={isPending || isFirst}
+          onClick={() => startTransition(() => moveItemEscopo(item.id, propostaId, "up"))}
+          className="text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+        >
+          <ChevronUp size={14} />
+        </button>
+        <button
+          type="button"
+          disabled={isPending || isLast}
+          onClick={() => startTransition(() => moveItemEscopo(item.id, propostaId, "down"))}
+          className="text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+        >
+          <ChevronDown size={14} />
+        </button>
+      </div>
       <CircleCheck size={20} className="shrink-0 text-green-600" strokeWidth={1.75} />
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
         <Package size={14} />
@@ -123,8 +151,14 @@ export function EscopoSection({ propostaId, itens }: { propostaId: string; itens
         <p className="text-sm text-muted">Nenhum item ainda.</p>
       ) : (
         <div className="flex flex-col gap-2">
-          {itens.map((item) => (
-            <ItemEscopoCard key={item.id} propostaId={propostaId} item={item} />
+          {itens.map((item, i) => (
+            <ItemEscopoCard
+              key={item.id}
+              propostaId={propostaId}
+              item={item}
+              isFirst={i === 0}
+              isLast={i === itens.length - 1}
+            />
           ))}
           {sugestoesRestantes.map((s) => (
             <SugestaoEscopoCard key={s.titulo} propostaId={propostaId} titulo={s.titulo} detalhe={s.detalhe} />

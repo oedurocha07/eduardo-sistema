@@ -131,6 +131,25 @@ export async function deleteItemEscopo(id: string, propostaId: string) {
   revalidarProposta(propostaId);
 }
 
+export async function moveItemEscopo(id: string, propostaId: string, direcao: "up" | "down") {
+  const itens = await prisma.itemEscopoProposta.findMany({
+    where: { propostaId },
+    orderBy: { ordem: "asc" },
+  });
+  const index = itens.findIndex((i) => i.id === id);
+  const alvoIndex = direcao === "up" ? index - 1 : index + 1;
+  if (index === -1 || alvoIndex < 0 || alvoIndex >= itens.length) return;
+
+  const atual = itens[index];
+  const alvo = itens[alvoIndex];
+
+  await prisma.$transaction([
+    prisma.itemEscopoProposta.update({ where: { id: atual.id }, data: { ordem: alvo.ordem } }),
+    prisma.itemEscopoProposta.update({ where: { id: alvo.id }, data: { ordem: atual.ordem } }),
+  ]);
+  revalidarProposta(propostaId);
+}
+
 export async function updateItemEscopo(
   id: string,
   propostaId: string,
