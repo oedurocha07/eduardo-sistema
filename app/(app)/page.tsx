@@ -52,6 +52,8 @@ export default async function Home() {
     eventosProximos,
     eventosHoje,
     tarefasPendentes,
+    propostasAprovadasSum,
+    recorrentesAtivosSum,
   ] = await Promise.all([
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, status: "PAGO" },
@@ -76,11 +78,17 @@ export default async function Home() {
       include: { projeto: { include: { cliente: { include: { empresa: true } } } } },
       orderBy: { prazo: "asc" },
     }),
+    prisma.proposta.aggregate({ where: { status: "APROVADA" }, _sum: { valor: true } }),
+    prisma.clienteRecorrente.aggregate({ where: { status: "ATIVO", recorrente: true }, _sum: { valorMensal: true } }),
   ]);
 
   const receita = lancamentosMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0);
   const despesa = lancamentosMes.filter((l) => l.tipo === "DESPESA").reduce((s, l) => s + Number(l.valor), 0);
   const lucro = receita - despesa;
+
+  const projecaoPropostasAprovadas = Number(propostasAprovadasSum._sum.valor ?? 0);
+  const projecaoRecorrentesAtivos = Number(recorrentesAtivosSum._sum.valorMensal ?? 0);
+  const projecaoMes = projecaoPropostasAprovadas + projecaoRecorrentesAtivos;
 
   const metaMensal = config.metaMensal ? Number(config.metaMensal) : null;
   const superMetaMensal = config.superMetaMensal ? Number(config.superMetaMensal) : null;
@@ -123,7 +131,7 @@ export default async function Home() {
       <p className="mb-1 text-sm text-muted capitalize">{hoje}</p>
       <PageHeader title={`${saudacao}, ${usuario?.nome.split(" ")[0]}.`} titleExtra={<RelogioSaoPaulo />} />
 
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Receita do mês" value={<Money value={receita} />} icon={Wallet} tone="success" />
         <StatCard
           label="Lucro do mês"
@@ -132,6 +140,12 @@ export default async function Home() {
           tone={lucro >= 0 ? "success" : "danger"}
         />
         <StatCard label="Despesa do mês" value={<Money value={despesa} />} icon={TrendingDown} tone="danger" />
+        <StatCard
+          label="Projeção do mês"
+          value={<Money value={projecaoMes} />}
+          icon={Target}
+          hint="Estimativa: propostas aprovadas + recorrentes ativos. Só vira receita real quando cair em Lançamentos."
+        />
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
