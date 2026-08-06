@@ -118,10 +118,10 @@ export function ClienteBillingFields({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <input name="nome" defaultValue={defaults.nome ?? ""} placeholder="Nome do cliente *" required className="input col-span-2" />
 
-      <div className="col-span-2 grid grid-cols-2 gap-2">
+      <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => setRecorrente(true)}

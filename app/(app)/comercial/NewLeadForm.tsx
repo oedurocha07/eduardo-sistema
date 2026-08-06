@@ -61,7 +61,7 @@ export function NewLeadForm({ controlled }: { controlled?: { open: boolean; onCl
               />
               <ClienteBillingFields key={formKey} defaults={extraido} />
 
-              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border pt-4">
                 <input name="contato" placeholder="Contato *" required className="input" />
                 <input name="telefone" placeholder="Telefone" className="input" />
                 <input name="origem" placeholder="Origem" className="input" />

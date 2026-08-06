@@ -46,7 +46,7 @@ export function EtapaStepper({
               >
                 {concluido ? <Check size={13} /> : i + 1}
               </span>
-              <span className={`text-[11px] whitespace-nowrap ${atual ? "text-foreground" : "text-muted"}`}>
+              <span className={`text-center text-[10px] leading-tight sm:text-[11px] sm:whitespace-nowrap ${atual ? "text-foreground" : "text-muted"}`}>
                 {passo.label}
               </span>
             </button>

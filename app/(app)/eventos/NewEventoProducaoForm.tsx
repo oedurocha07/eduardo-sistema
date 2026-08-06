@@ -27,7 +27,7 @@ export function NewEventoProducaoForm({ clientes }: { clientes: Cliente[] }) {
                 <X size={18} />
               </button>
             </div>
-            <form ref={formRef} action={createEvento} className="grid grid-cols-2 gap-3">
+            <form ref={formRef} action={createEvento} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input name="nome" placeholder="Nome do evento *" required className="input col-span-2" />
               <input name="local" placeholder="Local" className="input col-span-2" />
               <div className="flex flex-col gap-1">

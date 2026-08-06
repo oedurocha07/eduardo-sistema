@@ -18,7 +18,7 @@ type Defaults = {
 
 export function CofreFormFields({ defaults = {}, clientes = [] }: { defaults?: Defaults; clientes?: Opcao[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <select name="tipo" defaultValue={defaults.tipo ?? "JURIDICA"} className="input col-span-2">
         <option value="JURIDICA">Pessoa Jurídica</option>
         <option value="FISICA">Pessoa Física</option>
@@ -38,7 +38,7 @@ export function CofreFormFields({ defaults = {}, clientes = [] }: { defaults?: D
       <input name="telefone" defaultValue={defaults.telefone ?? ""} placeholder="Telefone/WhatsApp" className="input" />
       <input name="endereco" defaultValue={defaults.endereco ?? ""} placeholder="Endereço" className="input col-span-2" />
       <input name="cidade" defaultValue={defaults.cidade ?? ""} placeholder="Cidade" className="input" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input name="estado" defaultValue={defaults.estado ?? ""} placeholder="UF" maxLength={2} className="input" />
         <input name="cep" defaultValue={defaults.cep ?? ""} placeholder="CEP" className="input" />
       </div>

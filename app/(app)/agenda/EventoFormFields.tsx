@@ -12,7 +12,7 @@ export function EventoFormFields({ defaults = {} }: { defaults?: Defaults }) {
   return (
     <>
       <input name="titulo" defaultValue={defaults.titulo ?? ""} placeholder="Título *" required className="input" />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <select name="tipo" defaultValue={defaults.tipo ?? "OUTRO"} className="input">
           <option value="REUNIAO">Reunião</option>
           <option value="GRAVACAO">Gravação</option>
@@ -23,7 +23,7 @@ export function EventoFormFields({ defaults = {} }: { defaults?: Defaults }) {
         </select>
         <input name="local" defaultValue={defaults.local ?? ""} placeholder="Local / link" className="input" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted">Início</label>
           <input name="data" type="datetime-local" required defaultValue={defaults.data ?? ""} className="input" />

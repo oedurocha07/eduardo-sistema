@@ -31,12 +31,10 @@ export async function createProposta(formData: FormData) {
 }
 
 export async function updatePropostaStatus(id: string, status: StatusProposta) {
-  console.log("[DEBUG updatePropostaStatus]", { id, status, willSetEnviadaEm: status === "ENVIADA" });
-  const r = await prisma.proposta.update({
+  await prisma.proposta.update({
     where: { id },
     data: { status, enviadaEm: status === "ENVIADA" ? new Date() : undefined },
   });
-  console.log("[DEBUG updatePropostaStatus] resultado", { id: r.id, status: r.status, enviadaEm: r.enviadaEm });
   revalidarProposta(id);
 }
 

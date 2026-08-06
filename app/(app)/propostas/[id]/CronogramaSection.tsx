@@ -167,7 +167,7 @@ export function CronogramaSection({
           {etapas.length === 0 && sugestoesRestantes.length === 0 ? (
             <p className="text-sm text-muted">Nenhuma etapa definida ainda.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {etapas.map((etapa, i) => (
                 <EtapaCard
                   key={etapa.id}

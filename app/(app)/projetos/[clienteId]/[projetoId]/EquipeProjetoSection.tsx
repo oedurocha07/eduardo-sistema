@@ -66,7 +66,7 @@ export function EquipeProjetoSection({
               setAberto(false);
             });
           }}
-          className="mt-2 grid grid-cols-2 gap-2"
+          className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
         >
           <input name="nome" placeholder="Nome *" required className="input !py-1 text-xs" autoFocus />
           <input name="funcao" list="funcoes-projeto" placeholder="Função *" required className="input !py-1 text-xs" />

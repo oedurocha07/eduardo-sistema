@@ -28,7 +28,7 @@ export function DetalhesProjetoForm({
     >
       <div className="card">
         <h2 className="mb-3 font-semibold text-foreground">Informações</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted">Valor do projeto (R$)</label>
             <input name="valor" type="number" step="0.01" defaultValue={valor ?? ""} className="input" />
