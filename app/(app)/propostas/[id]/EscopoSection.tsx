@@ -35,7 +35,7 @@ function ItemEscopoCard({
   }
 
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+    <div className="group flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
       <div className="flex shrink-0 flex-col">
         <button
           type="button"
@@ -75,7 +75,7 @@ function ItemEscopoCard({
           className="w-full bg-transparent text-xs text-muted outline-none placeholder:text-muted/60"
         />
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-0.5">
+      <div className="ml-11 flex shrink-0 flex-col items-end gap-0.5 sm:ml-0">
         <span className="text-[10px] uppercase tracking-wide text-muted">Custo interno</span>
         <div className="flex items-center gap-1">
           <span className="text-xs text-muted">R$</span>

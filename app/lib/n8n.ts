@@ -24,10 +24,22 @@ export async function criarClienteAsaas({
   nome,
   cnpjCpf,
   email,
+  cep,
+  logradouro,
+  numero,
+  complemento,
+  bairro,
+  uf,
 }: {
   nome: string;
   cnpjCpf?: string | null;
   email?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  uf?: string | null;
 }): Promise<ClienteAsaasCriado | null> {
   const url = process.env.ASAAS_CRIAR_CLIENTE_WEBHOOK_URL;
   const key = process.env.ASAAS_CRIAR_CLIENTE_WEBHOOK_KEY;
@@ -40,7 +52,17 @@ export async function criarClienteAsaas({
     const resp = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json", "X-Chat-Token": key },
-      body: JSON.stringify({ nome, cnpjCpf: cnpjCpf ?? "", email: email ?? "" }),
+      body: JSON.stringify({
+        nome,
+        cnpjCpf: cnpjCpf ?? "",
+        email: email ?? "",
+        cep: cep ?? "",
+        logradouro: logradouro ?? "",
+        numero: numero ?? "",
+        complemento: complemento ?? "",
+        bairro: bairro ?? "",
+        uf: uf ?? "",
+      }),
     });
     if (!resp.ok) {
       console.error("Falha ao criar cliente no Asaas:", resp.status, await resp.text());

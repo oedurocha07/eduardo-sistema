@@ -139,7 +139,17 @@ export async function createLead(formData: FormData) {
   }
 
   if (!clienteRecorrente.idClienteAsaas) {
-    const criado = await criarClienteAsaas({ nome: empresaNome, cnpjCpf, email });
+    const criado = await criarClienteAsaas({
+      nome: empresaNome,
+      cnpjCpf,
+      email,
+      cep,
+      logradouro,
+      numero,
+      complemento,
+      bairro,
+      uf,
+    });
     if (criado) {
       await prisma.clienteRecorrente.update({ where: { id: clienteRecorrente.id }, data: { idClienteAsaas: criado.id } });
     }

@@ -76,7 +76,18 @@ export async function createCliente(formData: FormData) {
     }
   }
 
-  const criado = await criarClienteAsaas({ nome, cnpjCpf, email });
+  const endereco = parseEndereco(formData);
+  const criado = await criarClienteAsaas({
+    nome,
+    cnpjCpf,
+    email,
+    cep: endereco.cep,
+    logradouro: endereco.logradouro,
+    numero: endereco.numero,
+    complemento: endereco.complemento,
+    bairro: endereco.bairro,
+    uf: endereco.uf,
+  });
   if (criado) {
     await prisma.clienteRecorrente.update({ where: { id: cliente.id }, data: { idClienteAsaas: criado.id } });
   }
