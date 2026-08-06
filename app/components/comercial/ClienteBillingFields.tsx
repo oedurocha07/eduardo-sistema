@@ -57,6 +57,8 @@ const SERVICOS_PRESET = [
 
 type ItemInput = { item: string; quantidade: string; valorUnitario: string };
 
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 export function ClienteBillingFields({
   defaults = {},
   mostrarItensLocados = true,
@@ -67,6 +69,12 @@ export function ClienteBillingFields({
   const [recorrente, setRecorrente] = useState(defaults.recorrente ?? true);
   const [enviarFatura, setEnviarFatura] = useState(defaults.enviarFaturaLocacao ?? false);
   const [itens, setItens] = useState<ItemInput[]>([{ item: "", quantidade: "1", valorUnitario: "" }]);
+  const [valorTrabalho, setValorTrabalho] = useState(defaults.valorTrabalho?.toString() ?? "");
+
+  const valorTrabalhoNum = Number(valorTrabalho) || 0;
+  const capLocacao = valorTrabalhoNum * 0.4;
+  const totalItensLocados = itens.reduce((soma, it) => soma + (Number(it.quantidade) || 0) * (Number(it.valorUnitario) || 0), 0);
+  const restanteLocacao = capLocacao - totalItensLocados;
 
   const presetInicial = SERVICOS_PRESET.findIndex((p) => p.codigo === defaults.codigoServicoMunicipal);
   const [presetKey, setPresetKey] = useState(
@@ -231,7 +239,8 @@ export function ClienteBillingFields({
             name="valorTrabalho"
             type="number"
             step="0.01"
-            defaultValue={defaults.valorTrabalho?.toString() ?? ""}
+            value={valorTrabalho}
+            onChange={(e) => setValorTrabalho(e.target.value)}
             placeholder="Valor do trabalho"
             className="input"
           />
@@ -310,6 +319,14 @@ export function ClienteBillingFields({
       {enviarFatura && mostrarItensLocados && (
         <div className="col-span-2 flex flex-col gap-2 rounded-lg border border-border p-3">
           <span className="text-xs font-medium text-muted uppercase">Itens locados</span>
+          {!recorrente && valorTrabalhoNum > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted">Disponível pra locação (40% de {brl(valorTrabalhoNum)})</span>
+              <span className={`font-semibold ${restanteLocacao < 0 ? "text-danger" : "text-foreground"}`}>
+                {brl(restanteLocacao)}
+              </span>
+            </div>
+          )}
           {itens.map((it, i) => (
             <div key={i} className="flex gap-2">
               <input
