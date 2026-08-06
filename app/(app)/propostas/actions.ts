@@ -31,7 +31,10 @@ export async function createProposta(formData: FormData) {
 }
 
 export async function updatePropostaStatus(id: string, status: StatusProposta) {
-  await prisma.proposta.update({ where: { id }, data: { status } });
+  await prisma.proposta.update({
+    where: { id },
+    data: { status, enviadaEm: status === "ENVIADA" ? new Date() : undefined },
+  });
   revalidarProposta(id);
 }
 

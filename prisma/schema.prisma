@@ -260,6 +260,7 @@ model Proposta {
   clienteRecorrente   ClienteRecorrente? @relation(fields: [clienteRecorrenteId], references: [id])
   valor              Decimal?       @db.Decimal(12, 2)
   status             StatusProposta @default(RASCUNHO)
+  enviadaEm          DateTime?
   fraseAbertura      String?
   contextoProjeto    String?
   arquivoUrl         String?
