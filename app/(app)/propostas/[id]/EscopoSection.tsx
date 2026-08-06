@@ -58,7 +58,7 @@ function ItemEscopoCard({
       <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
         <Package size={14} />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-[140px] flex-1 flex-col gap-0.5">
         <input
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}

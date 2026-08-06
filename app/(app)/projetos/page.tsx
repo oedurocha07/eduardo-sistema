@@ -167,7 +167,7 @@ export default async function ProjetosPage({
           ) : (
             <div className="flex flex-col gap-2">
               {projetos.map((p) => (
-                <div key={p.id} className="card flex items-center gap-3">
+                <div key={p.id} className="card flex flex-wrap items-center gap-3">
                   <Link href={`/projetos/${p.clienteId}/${p.id}`} className="group flex min-w-0 flex-1 items-center gap-3">
                     <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
                       <FolderKanban size={18} />
@@ -180,7 +180,7 @@ export default async function ProjetosPage({
                       </div>
                     </div>
                   </Link>
-                  <div className="w-40 shrink-0">
+                  <div className="w-full sm:w-40 sm:shrink-0">
                     <ProjetoStatusSelect id={p.id} status={p.status} />
                   </div>
                 </div>

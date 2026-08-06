@@ -9,7 +9,7 @@ type Item = { id: string; titulo: string; custoInterno: number | null };
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const FATURAMENTO_60_40 =
-  "O faturamento será realizado em 60% referente à prestação de serviços e 40% referente à locação dos equipamentos utilizados na execução do projeto, conforme Nota Fiscal emitida pela AVRA.";
+  "O faturamento do projeto será realizado em duas modalidades: 60% do valor total por meio de Nota Fiscal de Prestação de Serviços e 40% por meio de Fatura/Nota de Débito referente à locação dos equipamentos utilizados na execução do projeto. Ambos os documentos, em conjunto, correspondem ao valor integral da contratação e respaldam a operação, observando a legislação aplicável às atividades de prestação de serviços e locação de bens móveis.";
 
 const CONDICOES_PAGAMENTO_PRESET = [
   {
