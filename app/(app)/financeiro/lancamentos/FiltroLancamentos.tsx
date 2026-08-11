@@ -34,12 +34,6 @@ export function FiltroLancamentos() {
         <option value="PENDENTE">Pendente</option>
         <option value="PAGO">Pago</option>
       </select>
-      <input
-        type="month"
-        className="input w-auto"
-        value={searchParams.get("mes") ?? ""}
-        onChange={(e) => atualizar("mes", e.target.value)}
-      />
     </div>
   );
 }

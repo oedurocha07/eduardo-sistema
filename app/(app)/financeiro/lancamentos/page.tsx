@@ -9,7 +9,8 @@ import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Badge } from "@/app/components/ui/Badge";
 import { Money } from "@/app/components/ui/Money";
-import { Receipt, X, Paperclip } from "lucide-react";
+import { proximoRef } from "@/app/(app)/agenda/dateUtils";
+import { Receipt, X, Paperclip, ChevronLeft, ChevronRight } from "lucide-react";
 import { TipoLancamento, StatusLancamento, Prisma } from "@/app/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -22,16 +23,34 @@ export default async function LancamentosPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { tipo, status, mes, bucket } = await searchParams;
+  const now = new Date();
 
-  const where: Prisma.LancamentoWhereInput = {};
+  let ref = now;
+  if (mes && /^\d{4}-\d{2}$/.test(mes)) {
+    const [ano, mesNum] = mes.split("-").map(Number);
+    ref = new Date(ano, mesNum - 1, 1);
+  }
+  const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
+  const mesAnteriorParam = (() => {
+    const anterior = proximoRef("mes", ref, -1);
+    return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const mesSeguinteParam = (() => {
+    const seguinte = proximoRef("mes", ref, 1);
+    return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
+  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+  const paramsExtras = new URLSearchParams();
+  if (tipo) paramsExtras.set("tipo", tipo);
+  if (status) paramsExtras.set("status", status);
+  const sufixoParams = paramsExtras.toString() ? `&${paramsExtras.toString()}` : "";
+
+  const where: Prisma.LancamentoWhereInput = { vencimento: { gte: inicioMes, lt: fimMes } };
   if (tipo === "RECEITA" || tipo === "DESPESA") where.tipo = tipo as TipoLancamento;
   if (status === "PAGO" || status === "PENDENTE") where.status = status as StatusLancamento;
-  if (mes) {
-    const [ano, mesNum] = mes.split("-").map(Number);
-    const inicio = new Date(ano, mesNum - 1, 1);
-    const fim = new Date(ano, mesNum, 1);
-    where.vencimento = { gte: inicio, lt: fim };
-  }
   if (bucket === "atrasados" || bucket === "hoje" || bucket === "7dias") {
     where.status = "PENDENTE";
     const hoje = new Date();
@@ -62,7 +81,7 @@ export default async function LancamentosPage({
   const clientes = clientesRaw.map((c) => ({ id: c.id, nome: c.empresa.nome }));
   const projetos = projetosRaw;
 
-  const filtrosAtivos = Boolean(tipo || status || mes || bucket);
+  const filtrosAtivos = Boolean(tipo || status || bucket);
 
   const LABELS: Record<string, string> = {
     RECEITA: "Receita",
@@ -76,7 +95,31 @@ export default async function LancamentosPage({
 
   return (
     <div className="p-6 md:p-8">
-      <PageHeader title="Lançamentos" />
+      <PageHeader
+        title="Lançamentos"
+        action={
+          <div className="flex items-center gap-1">
+            <Link
+              href={`/financeiro/lancamentos?mes=${mesAnteriorParam}${sufixoParams}`}
+              className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground"
+            >
+              <ChevronLeft size={16} />
+            </Link>
+            <span className="min-w-32 text-center text-sm font-medium text-foreground capitalize">{mesLabel}</span>
+            <Link
+              href={`/financeiro/lancamentos?mes=${mesSeguinteParam}${sufixoParams}`}
+              className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground"
+            >
+              <ChevronRight size={16} />
+            </Link>
+            {!estaNoMesAtual && (
+              <Link href={`/financeiro/lancamentos${sufixoParams ? `?${sufixoParams.slice(1)}` : ""}`} className="ml-2 text-xs text-accent-hover hover:underline">
+                Hoje
+              </Link>
+            )}
+          </div>
+        }
+      />
       <NewLancamentoForm clientes={clientes} projetos={projetos} />
       <FiltroLancamentos />
 
@@ -85,7 +128,6 @@ export default async function LancamentosPage({
           <span className="text-muted">Filtrando por:</span>
           {tipo && <Badge tone="neutral">{LABELS[tipo] ?? tipo}</Badge>}
           {status && <Badge tone="neutral">{LABELS[status] ?? status}</Badge>}
-          {mes && <Badge tone="neutral">{mes}</Badge>}
           {bucket && <Badge tone="neutral">{LABELS[bucket] ?? bucket}</Badge>}
           <Link href="/financeiro/lancamentos" className="flex items-center gap-1 text-xs text-muted hover:text-foreground">
             <X size={12} /> limpar
