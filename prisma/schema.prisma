@@ -236,6 +236,7 @@ model Lancamento {
   projetoId           String?
   projeto             Projeto?           @relation(fields: [projetoId], references: [id])
   asaasPaymentId      String?            @unique
+  notionPageId        String?            @unique
   origemIntegracao    String?
   createdAt           DateTime           @default(now())
 }
