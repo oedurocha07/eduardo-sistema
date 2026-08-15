@@ -15,6 +15,18 @@ const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
   ENCERRADO: "neutral",
 };
 
+const STATUS_LABEL_RECORRENTE: Record<string, string> = {
+  ATIVO: "Ativo",
+  PAUSADO: "Pausado",
+  ENCERRADO: "Encerrado",
+};
+
+const STATUS_LABEL_FREELA: Record<string, string> = {
+  ATIVO: "Em progresso",
+  PAUSADO: "Pausado",
+  ENCERRADO: "Encerrado",
+};
+
 type ItemLocado = { id: string; item: string; quantidade: number; valorUnitario: number };
 
 type Cliente = {
@@ -53,6 +65,8 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
   const itemFormRef = useRef<HTMLFormElement>(null);
 
   const totalItens = cliente.itensLocados.reduce((s, i) => s + i.quantidade * i.valorUnitario, 0);
+  const capLocacao = !cliente.recorrente && cliente.valorTrabalho ? cliente.valorTrabalho * 0.4 : null;
+  const restanteLocacao = capLocacao != null ? capLocacao - totalItens : null;
 
   return (
     <div className="card">
@@ -74,9 +88,19 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
                     : "text-muted"
               }`}
             >
-              <option value="ATIVO">Ativo</option>
-              <option value="PAUSADO">Pausado</option>
-              <option value="ENCERRADO">Encerrado</option>
+              {cliente.recorrente ? (
+                <>
+                  <option value="ATIVO">{STATUS_LABEL_RECORRENTE.ATIVO}</option>
+                  <option value="PAUSADO">{STATUS_LABEL_RECORRENTE.PAUSADO}</option>
+                  <option value="ENCERRADO">{STATUS_LABEL_RECORRENTE.ENCERRADO}</option>
+                </>
+              ) : (
+                <>
+                  <option value="ATIVO">{STATUS_LABEL_FREELA.ATIVO}</option>
+                  {cliente.status === "PAUSADO" && <option value="PAUSADO">{STATUS_LABEL_FREELA.PAUSADO} (legado)</option>}
+                  <option value="ENCERRADO">{STATUS_LABEL_FREELA.ENCERRADO}</option>
+                </>
+              )}
             </select>
             <Badge tone={cliente.recorrente ? "neutral" : "warning"}>{cliente.recorrente ? "Recorrente" : "Avulso"}</Badge>
           </div>
@@ -151,6 +175,14 @@ export function ClienteCard({ cliente }: { cliente: Cliente }) {
             + item
           </button>
         </div>
+        {cliente.enviarFaturaLocacao && restanteLocacao != null && (
+          <p className="mb-2 text-xs">
+            <span className="text-muted">Disponível pra locação (40% de <Money value={cliente.valorTrabalho ?? 0} />):</span>{" "}
+            <span className={`font-semibold ${restanteLocacao < 0 ? "text-danger" : "text-foreground"}`}>
+              <Money value={restanteLocacao} />
+            </span>
+          </p>
+        )}
         {cliente.itensLocados.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {cliente.itensLocados.map((item) => (

@@ -6,12 +6,17 @@ import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Money } from "@/app/components/ui/Money";
 import { NewClienteForm } from "./NewClienteForm";
 import { ClienteCard } from "./ClienteCard";
-import { Users, Wallet, RefreshCcw } from "lucide-react";
+import { FiltroStatusCliente } from "./FiltroStatusCliente";
+import { Users, UserCheck, Wallet, RefreshCcw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function ClientesPage({ searchParams }: { searchParams: Promise<{ tipo?: string }> }) {
-  const { tipo } = await searchParams;
+export default async function ClientesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tipo?: string; status?: string }>;
+}) {
+  const { tipo, status } = await searchParams;
   const filtro: "todos" | "recorrente" | "freela" = tipo === "recorrente" || tipo === "freela" ? tipo : "todos";
 
   const clientes = await prisma.clienteRecorrente.findMany({
@@ -20,13 +25,15 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
   });
 
   const clientesFiltrados = clientes.filter((c) => {
-    if (filtro === "recorrente") return c.recorrente;
-    if (filtro === "freela") return !c.recorrente;
+    if (filtro === "recorrente" && !c.recorrente) return false;
+    if (filtro === "freela" && c.recorrente) return false;
+    if (status && c.status !== status) return false;
     return true;
   });
 
-  const ativos = clientes.filter((c) => c.status === "ATIVO");
-  const mrr = ativos.filter((c) => c.recorrente).reduce((s, c) => s + Number(c.valorMensal ?? 0), 0);
+  const recorrentesAtivos = clientes.filter((c) => c.recorrente && c.status === "ATIVO");
+  const freelasEmProgresso = clientes.filter((c) => !c.recorrente && c.status === "ATIVO");
+  const mrr = recorrentesAtivos.reduce((s, c) => s + Number(c.valorMensal ?? 0), 0);
   const ultimaSync = clientes
     .map((c) => c.sincronizadoEm)
     .filter((d): d is Date => d !== null)
@@ -47,8 +54,9 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
         action={<NewClienteForm />}
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <StatCard label="Clientes ativos" value={ativos.length} icon={Users} />
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Clientes recorrentes ativos" value={recorrentesAtivos.length} icon={Users} />
+        <StatCard label="Clientes freelance em progresso" value={freelasEmProgresso.length} icon={UserCheck} />
         <StatCard label="Receita recorrente mensal" value={<Money value={mrr} />} icon={Wallet} tone="success" />
         <StatCard
           label="Última sincronização Notion"
@@ -57,18 +65,21 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
         />
       </div>
 
-      <div className="mb-4 flex items-center gap-1 rounded-lg border border-border p-1 w-fit">
-        {TABS.map((t) => (
-          <Link
-            key={t.value}
-            href={t.value === "todos" ? "/clientes" : `/clientes?tipo=${t.value}`}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              filtro === t.value ? "bg-accent/15 text-accent-hover" : "text-muted hover:text-foreground"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1 rounded-lg border border-border p-1 w-fit">
+          {TABS.map((t) => (
+            <Link
+              key={t.value}
+              href={t.value === "todos" ? "/clientes" : `/clientes?tipo=${t.value}`}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                filtro === t.value ? "bg-accent/15 text-accent-hover" : "text-muted hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+        <FiltroStatusCliente tipo={filtro} />
       </div>
 
       {clientesFiltrados.length === 0 ? (
