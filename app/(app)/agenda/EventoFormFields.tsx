@@ -15,10 +15,10 @@ export function EventoFormFields({ defaults = {} }: { defaults?: Defaults }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <select name="tipo" defaultValue={defaults.tipo ?? "OUTRO"} className="input">
           <option value="REUNIAO">Reunião</option>
-          <option value="GRAVACAO">Gravação</option>
-          <option value="EDICAO">Edição</option>
+          <option value="GRAVACAO">Filmagem</option>
+          <option value="EDICAO">Conteúdos</option>
           <option value="ENTREGA">Entrega</option>
-          <option value="TAREFA">Tarefa</option>
+          <option value="TAREFA">Trabalho</option>
           <option value="OUTRO">Outro</option>
         </select>
         <input name="local" defaultValue={defaults.local ?? ""} placeholder="Local / link" className="input" />

@@ -12,10 +12,10 @@ export const dynamic = "force-dynamic";
 
 const TIPO_LABEL: Record<string, string> = {
   REUNIAO: "Reunião",
-  GRAVACAO: "Gravação",
-  EDICAO: "Edição",
+  GRAVACAO: "Filmagem",
+  EDICAO: "Conteúdos",
   ENTREGA: "Entrega",
-  TAREFA: "Tarefa",
+  TAREFA: "Trabalho",
   OUTRO: "Outro",
 };
 
