@@ -353,6 +353,7 @@ enum TipoEvento {
   EDICAO
   ENTREGA
   TAREFA
+  PAGAMENTO
   OUTRO
 }
 

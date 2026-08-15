@@ -16,7 +16,7 @@ const CATEGORIA_PARA_TIPO: Record<string, TipoEvento> = {
   "Reunião": "REUNIAO",
   "Filmagem": "GRAVACAO",
   "Trabalho": "TAREFA",
-  "Pagamento": "TAREFA",
+  "Pagamento": "PAGAMENTO",
   "Conteúdos": "EDICAO",
 };
 

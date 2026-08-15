@@ -1,0 +1,1 @@
+ALTER TYPE "TipoEvento" ADD VALUE 'PAGAMENTO';

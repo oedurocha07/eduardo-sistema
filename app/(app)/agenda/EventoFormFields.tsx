@@ -19,6 +19,7 @@ export function EventoFormFields({ defaults = {} }: { defaults?: Defaults }) {
           <option value="EDICAO">Conteúdos</option>
           <option value="ENTREGA">Entrega</option>
           <option value="TAREFA">Trabalho</option>
+          <option value="PAGAMENTO">Pagamento</option>
           <option value="OUTRO">Outro</option>
         </select>
         <input name="local" defaultValue={defaults.local ?? ""} placeholder="Local / link" className="input" />

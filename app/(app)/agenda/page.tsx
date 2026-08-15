@@ -16,6 +16,7 @@ const TIPO_LABEL: Record<string, string> = {
   EDICAO: "Conteúdos",
   ENTREGA: "Entrega",
   TAREFA: "Trabalho",
+  PAGAMENTO: "Pagamento",
   OUTRO: "Outro",
 };
 
@@ -25,6 +26,7 @@ const TIPO_DOT: Record<string, string> = {
   EDICAO: "bg-violet-400",
   ENTREGA: "bg-success",
   TAREFA: "bg-accent",
+  PAGAMENTO: "bg-teal-400",
   OUTRO: "bg-neutral-400",
 };
 
@@ -34,6 +36,7 @@ const TIPO_CHIP: Record<string, string> = {
   EDICAO: "bg-violet-400/15 text-violet-300",
   ENTREGA: "bg-success/15 text-success",
   TAREFA: "bg-accent/15 text-accent-hover",
+  PAGAMENTO: "bg-teal-400/15 text-teal-300",
   OUTRO: "bg-neutral-400/15 text-neutral-300",
 };
 
@@ -50,8 +53,9 @@ export default async function AgendaPage({
 }) {
   const { view: viewRaw, data: dataRaw } = await searchParams;
   const view: AgendaView = viewRaw === "mes" || viewRaw === "dia" ? viewRaw : "semana";
-  const hoje = new Date();
-  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00`) : hoje;
+  const agora = new Date();
+  const hoje = new Date(Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate()));
+  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00Z`) : hoje;
 
   const { inicio, fim } = calcularIntervalo(view, ref);
 
@@ -64,10 +68,10 @@ export default async function AgendaPage({
 
   const tituloPeriodo =
     view === "dia"
-      ? ref.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })
+      ? ref.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", timeZone: "UTC" })
       : view === "mes"
-        ? ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
-        : `${inicio.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} — ${new Date(fim.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`;
+        ? ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" })
+        : `${inicio.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} — ${new Date(fim.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })}`;
 
   return (
     <div className="p-6 md:p-8">
@@ -134,14 +138,14 @@ export default async function AgendaPage({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
           {Array.from({ length: 7 }).map((_, i) => {
             const dia = new Date(inicio);
-            dia.setDate(dia.getDate() + i);
+            dia.setUTCDate(dia.getUTCDate() + i);
             const doDia = eventosPorDia(dia);
             const isHoje = mesmodia(dia, hoje);
             return (
               <div key={i} className="min-h-[140px]">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs text-muted uppercase">
-                    {DIAS_SEMANA[dia.getDay()]} <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getDate()}</span>
+                    {DIAS_SEMANA[dia.getUTCDay()]} <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getUTCDate()}</span>
                   </span>
                   <NewEventoForm
                     defaultData={`${formatarISODate(dia)}T09:00`}
@@ -164,7 +168,7 @@ export default async function AgendaPage({
                       </div>
                       <div className="mt-0.5 flex items-center justify-between gap-1.5">
                         <span className="truncate text-[10px] font-medium uppercase opacity-80">{TIPO_LABEL[e.tipo]}</span>
-                        <span className="shrink-0 opacity-70">{e.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="shrink-0 opacity-70">{e.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}</span>
                       </div>
                     </div>
                   ))}
@@ -184,17 +188,17 @@ export default async function AgendaPage({
           ))}
           {Array.from({ length: Math.round((fim.getTime() - inicio.getTime()) / 86400000) }).map((_, i) => {
             const dia = new Date(inicio);
-            dia.setDate(dia.getDate() + i);
+            dia.setUTCDate(dia.getUTCDate() + i);
             const doDia = eventosPorDia(dia);
             const isHoje = mesmodia(dia, hoje);
-            const foraDoMes = dia.getMonth() !== ref.getMonth();
+            const foraDoMes = dia.getUTCMonth() !== ref.getUTCMonth();
             return (
               <Link
                 key={i}
                 href={href("dia", dia)}
                 className={`card flex min-h-[90px] flex-col gap-1 p-2 transition-colors hover:border-accent/50 ${foraDoMes ? "opacity-40" : ""}`}
               >
-                <span className={`text-xs font-medium ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getDate()}</span>
+                <span className={`text-xs font-medium ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getUTCDate()}</span>
                 <div className="flex flex-col gap-0.5">
                   {doDia.slice(0, 3).map((e) => (
                     <div key={e.id} className={`truncate rounded px-1 py-0.5 text-[10px] font-medium ${TIPO_CHIP[e.tipo]}`}>
@@ -226,8 +230,8 @@ function EventoCard({
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted">
-            {evento.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-            {evento.dataFim && ` — ${evento.dataFim.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+            {evento.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}
+            {evento.dataFim && ` — ${evento.dataFim.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}`}
           </span>
           <EditEventoButton evento={evento} />
           <DeleteEventoButton id={evento.id} titulo={evento.titulo} />
