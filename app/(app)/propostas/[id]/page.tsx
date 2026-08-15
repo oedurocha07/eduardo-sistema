@@ -85,11 +85,13 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
       content: (
         <EscopoSection
           propostaId={proposta.id}
+          mostrarValoresItens={proposta.mostrarValoresItens}
           itens={proposta.itensEscopo.map((i) => ({
             id: i.id,
             titulo: i.titulo,
             detalhe: i.detalhe,
             custoInterno: i.custoInterno ? Number(i.custoInterno) : null,
+            valorCliente: i.valorCliente ? Number(i.valorCliente) : null,
           }))}
         />
       ),
@@ -134,7 +136,13 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           logoUrl={config.logoUrl}
           fraseAbertura={proposta.fraseAbertura}
           contextoProjeto={proposta.contextoProjeto}
-          itensEscopo={proposta.itensEscopo}
+          itensEscopo={proposta.itensEscopo.map((i) => ({
+            id: i.id,
+            titulo: i.titulo,
+            detalhe: i.detalhe,
+            valorCliente: i.valorCliente ? Number(i.valorCliente) : null,
+          }))}
+          mostrarValoresItens={proposta.mostrarValoresItens}
           etapas={proposta.etapas}
           semCronograma={proposta.semCronograma}
           valor={proposta.valor ? Number(proposta.valor) : null}

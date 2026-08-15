@@ -1,6 +1,6 @@
 import { BRAND_COLORS, isBrandColorKey } from "@/app/lib/brandColors";
 
-type Item = { id: string; titulo: string; detalhe: string | null };
+type Item = { id: string; titulo: string; detalhe: string | null; valorCliente: number | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -23,6 +23,7 @@ export function buildPropostaHtml(props: {
   fraseAbertura: string | null;
   contextoProjeto: string | null;
   itensEscopo: Item[];
+  mostrarValoresItens: boolean;
   etapas: Etapa[];
   semCronograma: boolean;
   valor: number | null;
@@ -41,6 +42,7 @@ export function buildPropostaHtml(props: {
     fraseAbertura,
     contextoProjeto,
     itensEscopo,
+    mostrarValoresItens,
     etapas,
     semCronograma,
     valor,
@@ -88,8 +90,12 @@ export function buildPropostaHtml(props: {
           ${itensEscopo
             .map(
               (item) =>
-                `<li class="pp-item"><span class="desc">${esc(item.titulo)}</span>${
+                `<li class="pp-item"><span class="info"><span class="desc">${esc(item.titulo)}</span>${
                   item.detalhe ? `<span class="detalhe">${esc(item.detalhe)}</span>` : ""
+                }</span>${
+                  mostrarValoresItens && item.valorCliente != null
+                    ? `<span class="valor">${esc(brl(item.valorCliente))}</span>`
+                    : ""
                 }</li>`,
             )
             .join("")}

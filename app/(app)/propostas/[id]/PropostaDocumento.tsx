@@ -1,7 +1,7 @@
 import { AvraLogo } from "@/app/components/AvraLogo";
 import { BRAND_COLORS, isBrandColorKey } from "@/app/lib/brandColors";
 
-type Item = { id: string; titulo: string; detalhe: string | null };
+type Item = { id: string; titulo: string; detalhe: string | null; valorCliente: number | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -15,6 +15,7 @@ export function PropostaDocumento({
   fraseAbertura,
   contextoProjeto,
   itensEscopo,
+  mostrarValoresItens,
   etapas,
   semCronograma,
   valor,
@@ -32,6 +33,7 @@ export function PropostaDocumento({
   fraseAbertura: string | null;
   contextoProjeto: string | null;
   itensEscopo: Item[];
+  mostrarValoresItens: boolean;
   etapas: Etapa[];
   semCronograma: boolean;
   valor: number | null;
@@ -145,8 +147,13 @@ export function PropostaDocumento({
             <ul className="pp-itens">
               {itensEscopo.map((item) => (
                 <li key={item.id} className="pp-item">
-                  <span className="desc">{item.titulo}</span>
-                  {item.detalhe && <span className="detalhe">{item.detalhe}</span>}
+                  <span className="info">
+                    <span className="desc">{item.titulo}</span>
+                    {item.detalhe && <span className="detalhe">{item.detalhe}</span>}
+                  </span>
+                  {mostrarValoresItens && item.valorCliente != null && (
+                    <span className="valor">{brl(item.valorCliente)}</span>
+                  )}
                 </li>
               ))}
             </ul>

@@ -253,12 +253,20 @@ export const PP_DOCUMENT_CSS = `
 }
 
 .pp-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
   padding: 18px 22px;
   border-bottom: 1px solid var(--pp-border-soft);
 }
 
 .pp-item:last-child {
   border-bottom: none;
+}
+
+.pp-item .info {
+  min-width: 0;
 }
 
 .pp-item .desc {
@@ -271,6 +279,13 @@ export const PP_DOCUMENT_CSS = `
   margin-top: 4px;
   font-size: 0.78rem;
   color: var(--pp-muted);
+}
+
+.pp-item .valor {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--pp-accent);
 }
 
 .pp-investimento {

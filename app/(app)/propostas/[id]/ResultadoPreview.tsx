@@ -3,7 +3,7 @@
 import { Download, Printer } from "lucide-react";
 import { PropostaDocumento } from "./PropostaDocumento";
 
-type Item = { id: string; titulo: string; detalhe: string | null };
+type Item = { id: string; titulo: string; detalhe: string | null; valorCliente: number | null };
 type Etapa = { id: string; titulo: string; prazo: string | null };
 
 export function ResultadoPreview({
@@ -15,6 +15,7 @@ export function ResultadoPreview({
   fraseAbertura,
   contextoProjeto,
   itensEscopo,
+  mostrarValoresItens,
   etapas,
   semCronograma,
   valor,
@@ -33,6 +34,7 @@ export function ResultadoPreview({
   fraseAbertura: string | null;
   contextoProjeto: string | null;
   itensEscopo: Item[];
+  mostrarValoresItens: boolean;
   etapas: Etapa[];
   semCronograma: boolean;
   valor: number | null;
@@ -69,6 +71,7 @@ export function ResultadoPreview({
         fraseAbertura={fraseAbertura}
         contextoProjeto={contextoProjeto}
         itensEscopo={itensEscopo}
+        mostrarValoresItens={mostrarValoresItens}
         etapas={etapas}
         semCronograma={semCronograma}
         valor={valor}

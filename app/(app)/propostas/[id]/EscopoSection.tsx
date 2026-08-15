@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { ChevronDown, ChevronUp, Circle, CircleCheck, Package, Plus, Trash2 } from "lucide-react";
-import { createItemEscopo, deleteItemEscopo, moveItemEscopo, updateItemEscopo } from "../actions";
+import { ChevronDown, ChevronUp, Circle, CircleCheck, Eye, EyeOff, Package, Plus, Trash2 } from "lucide-react";
+import { createItemEscopo, deleteItemEscopo, moveItemEscopo, updateItemEscopo, updatePropostaMostrarValores } from "../actions";
 import { ENTREGAS_SUGERIDAS } from "../constants";
 
-type Item = { id: string; titulo: string; detalhe: string | null; custoInterno: number | null };
+type Item = { id: string; titulo: string; detalhe: string | null; custoInterno: number | null; valorCliente: number | null };
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -14,24 +14,37 @@ function ItemEscopoCard({
   item,
   isFirst,
   isLast,
+  mostrarValoresItens,
 }: {
   propostaId: string;
   item: Item;
   isFirst: boolean;
   isLast: boolean;
+  mostrarValoresItens: boolean;
 }) {
   const [titulo, setTitulo] = useState(item.titulo);
   const [detalhe, setDetalhe] = useState(item.detalhe ?? "");
   const [custoInterno, setCustoInterno] = useState(item.custoInterno != null ? String(item.custoInterno) : "");
+  const [valorCliente, setValorCliente] = useState(item.valorCliente != null ? String(item.valorCliente) : "");
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => setTitulo(item.titulo), [item.titulo]);
   useEffect(() => setDetalhe(item.detalhe ?? ""), [item.detalhe]);
   useEffect(() => setCustoInterno(item.custoInterno != null ? String(item.custoInterno) : ""), [item.custoInterno]);
+  useEffect(() => setValorCliente(item.valorCliente != null ? String(item.valorCliente) : ""), [item.valorCliente]);
 
   function salvar() {
     if (!titulo.trim()) return;
-    startTransition(() => updateItemEscopo(item.id, propostaId, titulo, detalhe, custoInterno ? Number(custoInterno) : null));
+    startTransition(() =>
+      updateItemEscopo(
+        item.id,
+        propostaId,
+        titulo,
+        detalhe,
+        custoInterno ? Number(custoInterno) : null,
+        valorCliente ? Number(valorCliente) : null,
+      ),
+    );
   }
 
   return (
@@ -90,6 +103,23 @@ function ItemEscopoCard({
           />
         </div>
       </div>
+      {mostrarValoresItens && (
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <span className="text-[10px] uppercase tracking-wide text-accent">Valor pro cliente</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted">R$</span>
+            <input
+              value={valorCliente}
+              onChange={(e) => setValorCliente(e.target.value)}
+              onBlur={salvar}
+              disabled={isPending}
+              type="number"
+              step="0.01"
+              className="input w-24 !py-1 text-right text-xs"
+            />
+          </div>
+        </div>
+      )}
       <button
         onClick={() => startTransition(() => deleteItemEscopo(item.id, propostaId))}
         className="shrink-0 text-muted opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
@@ -129,22 +159,45 @@ function SugestaoEscopoCard({ propostaId, titulo, detalhe }: { propostaId: strin
   );
 }
 
-export function EscopoSection({ propostaId, itens }: { propostaId: string; itens: Item[] }) {
+export function EscopoSection({
+  propostaId,
+  itens,
+  mostrarValoresItens,
+}: {
+  propostaId: string;
+  itens: Item[];
+  mostrarValoresItens: boolean;
+}) {
   const [aberto, setAberto] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [mostrarPendingTransition, startMostrarTransition] = useTransition();
 
   const custoTotal = itens.reduce((soma, item) => soma + (item.custoInterno ?? 0), 0);
+  const valorClienteTotal = itens.reduce((soma, item) => soma + (item.valorCliente ?? 0), 0);
 
   const tituloJaExiste = (titulo: string) => itens.some((i) => i.titulo.trim().toLowerCase() === titulo.trim().toLowerCase());
   const sugestoesRestantes = ENTREGAS_SUGERIDAS.filter((s) => !tituloJaExiste(s.titulo));
 
   return (
     <div className="card">
-      <div className="mb-4">
-        <h2 className="font-semibold text-foreground">Escolha o escopo</h2>
-        <p className="text-xs text-muted">
-          Marque as entregas padrão ou crie uma personalizada. Custo interno é só pra você — nunca aparece pro cliente.
-        </p>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold text-foreground">Escolha o escopo</h2>
+          <p className="text-xs text-muted">
+            Marque as entregas padrão ou crie uma personalizada. Custo interno é só pra você — nunca aparece pro cliente.
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={mostrarPendingTransition}
+          onClick={() => startMostrarTransition(() => updatePropostaMostrarValores(propostaId, !mostrarValoresItens))}
+          className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+            mostrarValoresItens ? "border-accent bg-accent/10 text-accent-hover" : "border-border text-muted hover:border-accent/50"
+          }`}
+        >
+          {mostrarValoresItens ? <Eye size={13} /> : <EyeOff size={13} />}
+          Mostrar valores para o cliente
+        </button>
       </div>
 
       {itens.length === 0 && sugestoesRestantes.length === 0 ? (
@@ -158,6 +211,7 @@ export function EscopoSection({ propostaId, itens }: { propostaId: string; itens
               item={item}
               isFirst={i === 0}
               isLast={i === itens.length - 1}
+              mostrarValoresItens={mostrarValoresItens}
             />
           ))}
           {sugestoesRestantes.map((s) => (
@@ -169,6 +223,11 @@ export function EscopoSection({ propostaId, itens }: { propostaId: string; itens
       {custoTotal > 0 && (
         <p className="mt-3 text-xs text-muted">
           Custo operacional total: <span className="font-medium text-foreground">{brl(custoTotal)}</span>
+        </p>
+      )}
+      {mostrarValoresItens && valorClienteTotal > 0 && (
+        <p className="mt-1 text-xs text-muted">
+          Total dos itens pro cliente: <span className="font-medium text-accent-hover">{brl(valorClienteTotal)}</span>
         </p>
       )}
 
@@ -191,6 +250,15 @@ export function EscopoSection({ propostaId, itens }: { propostaId: string; itens
             placeholder="Custo interno (opcional)"
             className="input w-40 !py-1 text-xs"
           />
+          {mostrarValoresItens && (
+            <input
+              name="valorCliente"
+              type="number"
+              step="0.01"
+              placeholder="Valor pro cliente (opcional)"
+              className="input w-40 !py-1 text-xs"
+            />
+          )}
           <button type="submit" className="btn-primary !px-2 !py-1 text-xs">
             Add
           </button>

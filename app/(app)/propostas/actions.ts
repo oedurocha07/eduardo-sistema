@@ -114,6 +114,7 @@ export async function createItemEscopo(propostaId: string, formData: FormData) {
   const titulo = String(formData.get("titulo") ?? "").trim();
   const detalhe = String(formData.get("detalhe") ?? "").trim() || null;
   const custoInternoRaw = String(formData.get("custoInterno") ?? "").trim();
+  const valorClienteRaw = String(formData.get("valorCliente") ?? "").trim();
   if (!titulo) throw new Error("Título do item é obrigatório");
 
   const count = await prisma.itemEscopoProposta.count({ where: { propostaId } });
@@ -123,6 +124,7 @@ export async function createItemEscopo(propostaId: string, formData: FormData) {
       titulo,
       detalhe,
       custoInterno: custoInternoRaw ? Number(custoInternoRaw) : null,
+      valorCliente: valorClienteRaw ? Number(valorClienteRaw) : null,
       ordem: count,
     },
   });
@@ -159,12 +161,18 @@ export async function updateItemEscopo(
   titulo: string,
   detalhe: string,
   custoInterno: number | null,
+  valorCliente: number | null,
 ) {
   if (!titulo.trim()) throw new Error("Título do item é obrigatório");
   await prisma.itemEscopoProposta.update({
     where: { id },
-    data: { titulo: titulo.trim(), detalhe: detalhe.trim() || null, custoInterno },
+    data: { titulo: titulo.trim(), detalhe: detalhe.trim() || null, custoInterno, valorCliente },
   });
+  revalidarProposta(propostaId);
+}
+
+export async function updatePropostaMostrarValores(propostaId: string, mostrar: boolean) {
+  await prisma.proposta.update({ where: { id: propostaId }, data: { mostrarValoresItens: mostrar } });
   revalidarProposta(propostaId);
 }
 
