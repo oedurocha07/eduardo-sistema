@@ -28,6 +28,15 @@ const TIPO_DOT: Record<string, string> = {
   OUTRO: "bg-neutral-400",
 };
 
+const TIPO_CHIP: Record<string, string> = {
+  REUNIAO: "bg-blue-400/15 text-blue-300",
+  GRAVACAO: "bg-warning/15 text-warning",
+  EDICAO: "bg-violet-400/15 text-violet-300",
+  ENTREGA: "bg-success/15 text-success",
+  TAREFA: "bg-accent/15 text-accent-hover",
+  OUTRO: "bg-neutral-400/15 text-neutral-300",
+};
+
 const DIAS_SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 function href(view: AgendaView, ref: Date) {
@@ -98,6 +107,15 @@ export default async function AgendaPage({
         </div>
       </div>
 
+      <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        {Object.entries(TIPO_LABEL).map(([tipo, label]) => (
+          <span key={tipo} className="flex items-center gap-1.5 text-xs text-muted">
+            <span className={`h-2 w-2 rounded-full ${TIPO_DOT[tipo]}`} />
+            {label}
+          </span>
+        ))}
+      </div>
+
       {eventos.length === 0 && (
         <div className="mb-6">
           <EmptyState icon={CalendarDays} title="Período livre" description="Nenhum evento agendado. Clique em qualquer dia para agendar." />
@@ -137,15 +155,17 @@ export default async function AgendaPage({
                 <div className="flex flex-col gap-1.5">
                   {doDia.length === 0 && <p className="text-xs text-muted">—</p>}
                   {doDia.map((e) => (
-                    <div key={e.id} className="group rounded-lg bg-surface-hover px-2 py-1.5 text-xs">
+                    <div key={e.id} className={`group rounded-lg px-2 py-1.5 text-xs ${TIPO_CHIP[e.tipo]}`}>
                       <div className="flex items-center gap-1.5">
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIPO_DOT[e.tipo]}`} />
-                        <span className="truncate flex-1 text-foreground">{e.titulo}</span>
+                        <span className="truncate flex-1 font-medium">{e.titulo}</span>
                         <span className="opacity-0 transition-opacity group-hover:opacity-100">
                           <DeleteEventoButton id={e.id} titulo={e.titulo} />
                         </span>
                       </div>
-                      <span className="text-muted">{e.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                      <div className="mt-0.5 flex items-center justify-between gap-1.5">
+                        <span className="truncate text-[10px] font-medium uppercase opacity-80">{TIPO_LABEL[e.tipo]}</span>
+                        <span className="shrink-0 opacity-70">{e.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -177,9 +197,8 @@ export default async function AgendaPage({
                 <span className={`text-xs font-medium ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getDate()}</span>
                 <div className="flex flex-col gap-0.5">
                   {doDia.slice(0, 3).map((e) => (
-                    <div key={e.id} className="flex items-center gap-1 truncate text-[11px] text-muted">
-                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIPO_DOT[e.tipo]}`} />
-                      <span className="truncate">{e.titulo}</span>
+                    <div key={e.id} className={`truncate rounded px-1 py-0.5 text-[10px] font-medium ${TIPO_CHIP[e.tipo]}`}>
+                      {e.titulo}
                     </div>
                   ))}
                   {doDia.length > 3 && <span className="text-[11px] text-muted">+{doDia.length - 3}</span>}
@@ -215,7 +234,7 @@ function EventoCard({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
-        <span className="rounded-full bg-surface-hover px-2 py-0.5">{TIPO_LABEL[evento.tipo]}</span>
+        <span className={`rounded-full px-2 py-0.5 font-medium ${TIPO_CHIP[evento.tipo]}`}>{TIPO_LABEL[evento.tipo]}</span>
         {evento.local && (
           <span className="flex items-center gap-1">
             <MapPin size={12} /> {evento.local}
