@@ -10,6 +10,7 @@ import { Money } from "@/app/components/ui/Money";
 import { ReceitaDespesaChart } from "@/app/components/dashboard/ReceitaDespesaChart";
 import { MiniCalendar } from "@/app/components/dashboard/MiniCalendar";
 import { QuickLinksEditor } from "@/app/components/dashboard/QuickLinksEditor";
+import { ProjecaoDoMesButton } from "@/app/components/dashboard/ProjecaoDoMesButton";
 import { isDashboardModuleKey, DashboardModuleKey } from "@/app/lib/dashboardModules";
 import { ETAPAS } from "@/app/(app)/comercial/constants";
 import {
@@ -54,6 +55,9 @@ export default async function Home() {
     tarefasPendentes,
     propostasAprovadasSum,
     recorrentesAtivosSum,
+    lancamentosReceitaMes,
+    propostasAprovadasList,
+    recorrentesAtivosList,
   ] = await Promise.all([
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, status: "PAGO" },
@@ -80,6 +84,21 @@ export default async function Home() {
     }),
     prisma.proposta.aggregate({ where: { status: "APROVADA" }, _sum: { valor: true } }),
     prisma.clienteRecorrente.aggregate({ where: { status: "ATIVO", recorrente: true }, _sum: { valorMensal: true } }),
+    prisma.lancamento.findMany({
+      where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
+      select: { id: true, descricao: true, valor: true, status: true, vencimento: true },
+      orderBy: { vencimento: "asc" },
+    }),
+    prisma.proposta.findMany({
+      where: { status: "APROVADA" },
+      select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true },
+      orderBy: { valor: "desc" },
+    }),
+    prisma.clienteRecorrente.findMany({
+      where: { status: "ATIVO", recorrente: true },
+      select: { id: true, nome: true, valorMensal: true },
+      orderBy: { valorMensal: "desc" },
+    }),
   ]);
 
   const receita = lancamentosMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0);
@@ -89,6 +108,25 @@ export default async function Home() {
   const projecaoPropostasAprovadas = Number(propostasAprovadasSum._sum.valor ?? 0);
   const projecaoRecorrentesAtivos = Number(recorrentesAtivosSum._sum.valorMensal ?? 0);
   const projecaoMes = projecaoPropostasAprovadas + projecaoRecorrentesAtivos;
+
+  const lancamentosReceitaMesSerializado = lancamentosReceitaMes.map((l) => ({
+    id: l.id,
+    descricao: l.descricao,
+    valor: Number(l.valor),
+    status: l.status,
+    vencimento: l.vencimento.toISOString(),
+  }));
+  const propostasAprovadasSerializado = propostasAprovadasList.map((p) => ({
+    id: p.id,
+    titulo: p.titulo,
+    cliente: p.nomeEmpresa ?? p.nomeCliente ?? "",
+    valor: Number(p.valor ?? 0),
+  }));
+  const recorrentesAtivosSerializado = recorrentesAtivosList.map((r) => ({
+    id: r.id,
+    nome: r.nome,
+    valorMensal: Number(r.valorMensal ?? 0),
+  }));
 
   const metaMensal = config.metaMensal ? Number(config.metaMensal) : null;
   const superMetaMensal = config.superMetaMensal ? Number(config.superMetaMensal) : null;
@@ -140,11 +178,11 @@ export default async function Home() {
           tone={lucro >= 0 ? "success" : "danger"}
         />
         <StatCard label="Despesa do mês" value={<Money value={despesa} />} icon={TrendingDown} tone="danger" />
-        <StatCard
-          label="Projeção do mês"
-          value={<Money value={projecaoMes} />}
-          icon={Target}
-          hint="Estimativa: propostas aprovadas + recorrentes ativos. Só vira receita real quando cair em Lançamentos."
+        <ProjecaoDoMesButton
+          projecaoMes={projecaoMes}
+          lancamentos={lancamentosReceitaMesSerializado}
+          recorrentes={recorrentesAtivosSerializado}
+          propostas={propostasAprovadasSerializado}
         />
       </div>
 
