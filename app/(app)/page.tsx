@@ -91,7 +91,7 @@ export default async function Home() {
     }),
     prisma.proposta.findMany({
       where: { status: "APROVADA" },
-      select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true },
+      select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true, pagoManual: true },
       orderBy: { valor: "desc" },
     }),
     prisma.clienteRecorrente.findMany({
@@ -121,6 +121,7 @@ export default async function Home() {
     titulo: p.titulo,
     cliente: p.nomeEmpresa ?? p.nomeCliente ?? "",
     valor: Number(p.valor ?? 0),
+    pagoManual: p.pagoManual,
   }));
   const recorrentesAtivosSerializado = recorrentesAtivosList.map((r) => ({
     id: r.id,

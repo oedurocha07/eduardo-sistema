@@ -1,0 +1,1 @@
+ALTER TABLE "Proposta" ADD COLUMN "pagoManual" BOOLEAN NOT NULL DEFAULT false;

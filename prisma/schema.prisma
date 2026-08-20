@@ -273,6 +273,7 @@ model Proposta {
   semCronograma      Boolean        @default(false)
   mostrarValoresItens Boolean       @default(false)
   corDestaque        String?
+  pagoManual         Boolean        @default(false)
   createdAt          DateTime       @default(now())
 
   itensEscopo ItemEscopoProposta[]

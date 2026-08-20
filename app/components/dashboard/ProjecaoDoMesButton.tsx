@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Target, X } from "lucide-react";
 import { Money } from "@/app/components/ui/Money";
 import { Badge } from "@/app/components/ui/Badge";
+import { updatePropostaPagoManual } from "./actions";
 
 type LancamentoItem = { id: string; descricao: string; valor: number; status: string; vencimento: string };
 type RecorrenteItem = { id: string; nome: string; valorMensal: number };
-type PropostaItem = { id: string; titulo: string; cliente: string; valor: number };
+type PropostaItem = { id: string; titulo: string; cliente: string; valor: number; pagoManual: boolean };
 
 export function ProjecaoDoMesButton({
   projecaoMes,
@@ -21,12 +22,20 @@ export function ProjecaoDoMesButton({
   propostas: PropostaItem[];
 }) {
   const [open, setOpen] = useState(false);
+  const [propostasState, setPropostasState] = useState(propostas);
 
   const totalLancado = lancamentos.reduce((s, l) => s + l.valor, 0);
   const totalPago = lancamentos.filter((l) => l.status === "PAGO").reduce((s, l) => s + l.valor, 0);
   const totalPendente = lancamentos.filter((l) => l.status === "PENDENTE").reduce((s, l) => s + l.valor, 0);
   const totalRecorrentes = recorrentes.reduce((s, r) => s + r.valorMensal, 0);
-  const totalPropostas = propostas.reduce((s, p) => s + p.valor, 0);
+  const totalPropostas = propostasState.reduce((s, p) => s + p.valor, 0);
+
+  function handlePagoChange(propostaId: string, pago: boolean) {
+    setPropostasState((prev) => prev.map((p) => (p.id === propostaId ? { ...p, pagoManual: pago } : p)));
+    updatePropostaPagoManual(propostaId, pago).catch(() => {
+      setPropostasState((prev) => prev.map((p) => (p.id === propostaId ? { ...p, pagoManual: !pago } : p)));
+    });
+  }
 
   return (
     <>
@@ -113,17 +122,32 @@ export function ProjecaoDoMesButton({
                   <h3 className="text-sm font-semibold text-foreground">Propostas aprovadas</h3>
                   <Money value={totalPropostas} className="text-sm font-semibold text-foreground" />
                 </div>
-                {propostas.length === 0 ? (
+                <p className="mb-2 text-xs text-muted">
+                  O status abaixo é só um controle visual seu — quando o pagamento realmente cair, ele já vai estar em Financeiro.
+                </p>
+                {propostasState.length === 0 ? (
                   <p className="text-sm text-muted">Nenhuma proposta aprovada aguardando faturamento.</p>
                 ) : (
                   <div className="flex flex-col gap-1.5">
-                    {propostas.map((p) => (
+                    {propostasState.map((p) => (
                       <div key={p.id} className="flex items-center justify-between gap-2 text-sm">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="truncate text-foreground">{p.titulo}</div>
                           {p.cliente && <div className="truncate text-xs text-muted">{p.cliente}</div>}
                         </div>
                         <Money value={p.valor} className="shrink-0 text-muted" />
+                        <select
+                          value={p.pagoManual ? "pago" : "nao_pago"}
+                          onChange={(e) => handlePagoChange(p.id, e.target.value === "pago")}
+                          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium ${
+                            p.pagoManual
+                              ? "border-success/30 bg-success/15 text-success"
+                              : "border-border bg-surface-hover text-muted"
+                          }`}
+                        >
+                          <option value="nao_pago">Não pago</option>
+                          <option value="pago">Pago</option>
+                        </select>
                       </div>
                     ))}
                   </div>
