@@ -11,6 +11,12 @@ import { Users, UserCheck, Wallet, RefreshCcw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+function prioridadeFreela(status: string) {
+  if (status === "ATIVO") return 0;
+  if (status === "PAUSADO") return 1;
+  return 2; // ENCERRADO
+}
+
 export default async function ClientesPage({
   searchParams,
 }: {
@@ -24,12 +30,19 @@ export default async function ClientesPage({
     orderBy: { nome: "asc" },
   });
 
-  const clientesFiltrados = clientes.filter((c) => {
-    if (filtro === "recorrente" && !c.recorrente) return false;
-    if (filtro === "freela" && c.recorrente) return false;
-    if (status && c.status !== status) return false;
-    return true;
-  });
+  const clientesFiltrados = clientes
+    .filter((c) => {
+      if (filtro === "recorrente" && !c.recorrente) return false;
+      if (filtro === "freela" && c.recorrente) return false;
+      if (status && c.status !== status) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const pa = a.recorrente ? 0 : prioridadeFreela(a.status);
+      const pb = b.recorrente ? 0 : prioridadeFreela(b.status);
+      if (pa !== pb) return pa - pb;
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
 
   const recorrentesAtivos = clientes.filter((c) => c.recorrente && c.status === "ATIVO");
   const freelasEmProgresso = clientes.filter((c) => !c.recorrente && c.status === "ATIVO");
