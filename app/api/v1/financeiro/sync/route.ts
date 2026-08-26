@@ -9,6 +9,7 @@ type LancamentoNotionPayload = {
   valor: number;
   vencimento: string;
   pago: boolean;
+  categoria?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
         notionPageId: l.notionPageId,
         tipo: l.tipo,
         descricao: l.descricao,
+        categoria: l.categoria ?? null,
         valor: l.valor,
         vencimento: parseDataHoraLocal(l.vencimento),
         status: l.pago ? "PAGO" : "PENDENTE",
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       update: {
         tipo: l.tipo,
         descricao: l.descricao,
+        categoria: l.categoria ?? null,
         valor: l.valor,
         vencimento: parseDataHoraLocal(l.vencimento),
         status: l.pago ? "PAGO" : "PENDENTE",
