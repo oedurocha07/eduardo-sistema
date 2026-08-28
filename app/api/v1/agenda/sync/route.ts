@@ -29,6 +29,7 @@ export async function POST(request: Request) {
   const body: { eventos: EventoNotionPayload[] } = await request.json();
   const eventos = Array.isArray(body.eventos) ? body.eventos : [];
 
+  let sincronizados = 0;
   for (const evento of eventos) {
     if (!evento.notionPageId || !evento.titulo || !evento.dataInicio) continue;
 
@@ -52,16 +53,24 @@ export async function POST(request: Request) {
         descricao: evento.descricao ?? null,
       },
     });
+    sincronizados++;
   }
 
+  // Seguranca: nunca podar eventos existentes se a lista recebida vier vazia --
+  // uma lista vazia quase sempre significa falha/instabilidade na origem (Notion),
+  // nao que tudo deva ser removido.
+  let removidosCount = 0;
   const idsAtuais = eventos.map((e) => e.notionPageId).filter(Boolean);
-  const removidos = await prisma.evento.deleteMany({
-    where: {
-      notionPageId: { not: null, notIn: idsAtuais },
-    },
-  });
+  if (idsAtuais.length > 0) {
+    const removidos = await prisma.evento.deleteMany({
+      where: {
+        notionPageId: { not: null, notIn: idsAtuais },
+      },
+    });
+    removidosCount = removidos.count;
+  }
 
   revalidatePath("/agenda");
 
-  return Response.json({ ok: true, sincronizados: eventos.length, removidos: removidos.count });
+  return Response.json({ ok: true, sincronizados, removidos: removidosCount });
 }
