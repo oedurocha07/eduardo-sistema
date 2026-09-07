@@ -52,9 +52,6 @@ export function ProjecaoDoMesButton({
   const totalPendente = lancamentosState.filter((l) => l.status === "PENDENTE").reduce((s, l) => s + l.valor, 0);
   const totalRecorrentes = recorrentes.reduce((s, r) => s + r.valorMensal, 0);
   const totalPropostas = propostasState.reduce((s, p) => s + p.valor, 0);
-  const totalPropostasNaoPagas = propostasState.filter((p) => !p.pagoManual).reduce((s, p) => s + p.valor, 0);
-  const totalPropostasPagas = totalPropostas - totalPropostasNaoPagas;
-  const totalMesSelecionado = totalRecorrentes + totalPropostasNaoPagas;
 
   async function irParaMes(novoMes: string) {
     setMes(novoMes);
@@ -145,7 +142,7 @@ export function ProjecaoDoMesButton({
                   <Money value={totalLancado} className="text-sm font-semibold text-foreground" />
                 </div>
                 <p className="mb-2 text-xs text-muted">
-                  Dinheiro real registrado no mês — não é a mesma conta de recorrentes + propostas abaixo, por isso os números não precisam bater.
+                  Isso é o que define o valor final do mês (rodapé abaixo). Recorrências e propostas mais abaixo são só uma referência visual — quando o pagamento cai de verdade, ele aparece aqui.
                 </p>
                 {lancamentosState.length === 0 ? (
                   <p className="text-sm text-muted">Nenhum lançamento de receita neste mês.</p>
@@ -193,16 +190,10 @@ export function ProjecaoDoMesButton({
               <section>
                 <div className="mb-1 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-foreground">Propostas aprovadas neste mês</h3>
-                  <Money value={totalPropostasNaoPagas} className="text-sm font-semibold text-foreground" />
+                  <Money value={totalPropostas} className="text-sm font-semibold text-foreground" />
                 </div>
                 <p className="mb-2 text-xs text-muted">
-                  O status abaixo é só um controle visual seu — quando o pagamento realmente cair, ele já vai estar em Financeiro.
-                  {totalPropostasPagas > 0 && (
-                    <>
-                      {" "}
-                      <Money value={totalPropostasPagas} /> já marcadas como pagas não entram nesse total nem na projeção.
-                    </>
-                  )}
+                  O status abaixo é só um controle visual seu — não afeta nenhum total. Quando o pagamento realmente cair, ele já vai estar em Financeiro.
                 </p>
                 {propostasState.length === 0 ? (
                   <p className="text-sm text-muted">Nenhuma proposta aprovada neste mês.</p>
@@ -235,8 +226,8 @@ export function ProjecaoDoMesButton({
             </div>
 
             <div className="flex items-center justify-between border-t border-border bg-surface-hover px-5 py-3">
-              <span className="text-xs text-muted">Recorrentes + propostas aprovadas ({mesLabel})</span>
-              <Money value={totalMesSelecionado} className="text-base font-bold text-foreground" />
+              <span className="text-xs text-muted">Total lançado em Financeiro ({mesLabel})</span>
+              <Money value={totalLancado} className="text-base font-bold text-foreground" />
             </div>
           </div>
         </div>

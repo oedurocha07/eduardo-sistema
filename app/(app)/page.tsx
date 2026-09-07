@@ -83,7 +83,7 @@ export default async function Home() {
       include: { projeto: { include: { cliente: { include: { empresa: true } } } } },
       orderBy: { prazo: "asc" },
     }),
-    prisma.proposta.aggregate({ where: { status: "APROVADA", pagoManual: false, enviadaEm: { gte: inicioMes, lt: fimMes } }, _sum: { valor: true } }),
+    prisma.proposta.aggregate({ where: { status: "APROVADA", enviadaEm: { gte: inicioMes, lt: fimMes } }, _sum: { valor: true } }),
     prisma.clienteRecorrente.aggregate({ where: { status: "ATIVO", recorrente: true }, _sum: { valorMensal: true } }),
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
