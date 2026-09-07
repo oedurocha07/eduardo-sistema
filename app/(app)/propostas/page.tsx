@@ -2,11 +2,11 @@ import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { NewPropostaForm } from "./NewPropostaForm";
 import { PropostaStatusSelect } from "./PropostaStatusSelect";
-import { FiltroPropostas } from "./FiltroPropostas";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Money } from "@/app/components/ui/Money";
-import { FileText, Paperclip, ArrowRight } from "lucide-react";
+import { proximoRef } from "@/app/(app)/agenda/dateUtils";
+import { FileText, Paperclip, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusProposta } from "@/app/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -27,31 +27,47 @@ export default async function PropostasPage({
   const { status: statusRaw, mes } = await searchParams;
   const grupo: GrupoStatus = statusRaw === "fechadas" || statusRaw === "perdidas" ? statusRaw : "abertas";
 
+  const now = new Date();
+  let ref = now;
+  if (mes && /^\d{4}-\d{2}$/.test(mes)) {
+    const [ano, mesNum] = mes.split("-").map(Number);
+    ref = new Date(ano, mesNum - 1, 1);
+  }
+  const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
+  const mesAnteriorParam = (() => {
+    const anterior = proximoRef("mes", ref, -1);
+    return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const mesSeguinteParam = (() => {
+    const seguinte = proximoRef("mes", ref, 1);
+    return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
+  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
   const [propostas, clientesRecorrentes, clientesFreela] = await Promise.all([
     prisma.proposta.findMany({
       include: { clienteRecorrente: true, cliente: { include: { empresa: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.clienteRecorrente.findMany({ where: { status: { not: "ENCERRADO" } }, orderBy: { nome: "asc" } }),
-    prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true }, orderBy: { createdAt: "desc" } }),
+    prisma.cliente.findMany({ where: { ativo: true }, include: { empresa: true } }),
   ]);
 
   const porGrupo = (g: GrupoStatus) => propostas.filter((p) => STATUS_POR_GRUPO[g].includes(p.status));
 
-  let propostasFiltradas = porGrupo(grupo);
-  if (mes) {
-    const [ano, mesNum] = mes.split("-").map(Number);
-    const inicio = new Date(ano, mesNum - 1, 1);
-    const fim = new Date(ano, mesNum, 1);
-    propostasFiltradas = propostasFiltradas.filter(
-      (p) => p.enviadaEm && p.enviadaEm >= inicio && p.enviadaEm < fim
-    );
-  }
+  // Propostas sem enviadaEm (rascunhos ainda não enviados) não têm mês pra agrupar —
+  // ficam sempre visíveis, independente do mês selecionado.
+  const noMes = (p: (typeof propostas)[number]) =>
+    !p.enviadaEm || (p.enviadaEm >= inicioMes && p.enviadaEm < fimMes);
+
+  const propostasFiltradas = porGrupo(grupo).filter(noMes);
 
   const TABS: { value: GrupoStatus; label: string }[] = [
-    { value: "abertas", label: `Abertas (${porGrupo("abertas").length})` },
-    { value: "fechadas", label: `Fechadas (${porGrupo("fechadas").length})` },
-    { value: "perdidas", label: `Perdidas (${porGrupo("perdidas").length})` },
+    { value: "abertas", label: `Abertas (${porGrupo("abertas").filter(noMes).length})` },
+    { value: "fechadas", label: `Fechadas (${porGrupo("fechadas").filter(noMes).length})` },
+    { value: "perdidas", label: `Perdidas (${porGrupo("perdidas").filter(noMes).length})` },
   ];
 
   return (
@@ -72,7 +88,7 @@ export default async function PropostasPage({
           {TABS.map((t) => (
             <Link
               key={t.value}
-              href={`/propostas?status=${t.value}`}
+              href={`/propostas?status=${t.value}${mes ? `&mes=${mes}` : ""}`}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 grupo === t.value ? "bg-accent/15 text-accent-hover" : "text-muted hover:text-foreground"
               }`}
@@ -81,7 +97,26 @@ export default async function PropostasPage({
             </Link>
           ))}
         </div>
-        <FiltroPropostas />
+        <div className="flex items-center gap-1">
+          <Link
+            href={`/propostas?status=${grupo}&mes=${mesAnteriorParam}`}
+            className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground"
+          >
+            <ChevronLeft size={16} />
+          </Link>
+          <span className="min-w-32 text-center text-sm font-medium text-foreground capitalize">{mesLabel}</span>
+          <Link
+            href={`/propostas?status=${grupo}&mes=${mesSeguinteParam}`}
+            className="rounded-md bg-surface p-1.5 text-muted hover:bg-surface-hover hover:text-foreground"
+          >
+            <ChevronRight size={16} />
+          </Link>
+          {!estaNoMesAtual && (
+            <Link href={`/propostas?status=${grupo}`} className="ml-2 text-xs text-accent-hover hover:underline">
+              Hoje
+            </Link>
+          )}
+        </div>
       </div>
 
       {propostasFiltradas.length === 0 ? (
