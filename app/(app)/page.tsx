@@ -37,6 +37,7 @@ export default async function Home() {
   const now = new Date();
   const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
   const fimMes = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const mesAtualStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const inicioGrafico = new Date(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1);
   const inicioHoje = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const fimHoje = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -82,7 +83,7 @@ export default async function Home() {
       include: { projeto: { include: { cliente: { include: { empresa: true } } } } },
       orderBy: { prazo: "asc" },
     }),
-    prisma.proposta.aggregate({ where: { status: "APROVADA", pagoManual: false }, _sum: { valor: true } }),
+    prisma.proposta.aggregate({ where: { status: "APROVADA", pagoManual: false, enviadaEm: { gte: inicioMes, lt: fimMes } }, _sum: { valor: true } }),
     prisma.clienteRecorrente.aggregate({ where: { status: "ATIVO", recorrente: true }, _sum: { valorMensal: true } }),
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
@@ -90,7 +91,7 @@ export default async function Home() {
       orderBy: { vencimento: "asc" },
     }),
     prisma.proposta.findMany({
-      where: { status: "APROVADA" },
+      where: { status: "APROVADA", enviadaEm: { gte: inicioMes, lt: fimMes } },
       select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true, pagoManual: true },
       orderBy: { valor: "desc" },
     }),
@@ -181,6 +182,7 @@ export default async function Home() {
         <StatCard label="Despesa do mês" value={<Money value={despesa} />} icon={TrendingDown} tone="danger" />
         <ProjecaoDoMesButton
           projecaoMes={projecaoMes}
+          mesInicial={mesAtualStr}
           lancamentos={lancamentosReceitaMesSerializado}
           recorrentes={recorrentesAtivosSerializado}
           propostas={propostasAprovadasSerializado}
