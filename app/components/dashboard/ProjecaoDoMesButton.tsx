@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Target, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Money } from "@/app/components/ui/Money";
 import { Badge } from "@/app/components/ui/Badge";
-import { updatePropostaPagoManual, getProjecaoDoMesDetalhes } from "./actions";
+import { updatePropostaPagoManual, updateRecorrentePagoMes, getProjecaoDoMesDetalhes } from "./actions";
 
 type LancamentoItem = { id: string; descricao: string; valor: number; status: string; vencimento: string };
-type RecorrenteItem = { id: string; nome: string; valorMensal: number };
+type RecorrenteItem = { id: string; nome: string; valorMensal: number; pago: boolean };
 type PropostaItem = { id: string; titulo: string; cliente: string; valor: number; pagoManual: boolean };
 
 function parseMes(mes: string) {
@@ -43,6 +43,7 @@ export function ProjecaoDoMesButton({
   const [loading, setLoading] = useState(false);
   const [lancamentosState, setLancamentosState] = useState(lancamentos);
   const [propostasState, setPropostasState] = useState(propostas);
+  const [recorrentesState, setRecorrentesState] = useState(recorrentes);
 
   const estaNoMesInicial = mes === mesInicial;
   const mesLabel = parseMes(mes).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
@@ -50,7 +51,7 @@ export function ProjecaoDoMesButton({
   const totalLancado = lancamentosState.reduce((s, l) => s + l.valor, 0);
   const totalPago = lancamentosState.filter((l) => l.status === "PAGO").reduce((s, l) => s + l.valor, 0);
   const totalPendente = lancamentosState.filter((l) => l.status === "PENDENTE").reduce((s, l) => s + l.valor, 0);
-  const totalRecorrentes = recorrentes.reduce((s, r) => s + r.valorMensal, 0);
+  const totalRecorrentes = recorrentesState.reduce((s, r) => s + r.valorMensal, 0);
   const totalPropostas = propostasState.reduce((s, p) => s + p.valor, 0);
 
   async function irParaMes(novoMes: string) {
@@ -60,6 +61,7 @@ export function ProjecaoDoMesButton({
       const dados = await getProjecaoDoMesDetalhes(novoMes);
       setLancamentosState(dados.lancamentos);
       setPropostasState(dados.propostas);
+      setRecorrentesState(dados.recorrentes);
     } finally {
       setLoading(false);
     }
@@ -72,12 +74,20 @@ export function ProjecaoDoMesButton({
     });
   }
 
+  function handleRecorrentePagoChange(clienteRecorrenteId: string, pago: boolean) {
+    setRecorrentesState((prev) => prev.map((r) => (r.id === clienteRecorrenteId ? { ...r, pago } : r)));
+    updateRecorrentePagoMes(clienteRecorrenteId, mes, pago).catch(() => {
+      setRecorrentesState((prev) => prev.map((r) => (r.id === clienteRecorrenteId ? { ...r, pago: !pago } : r)));
+    });
+  }
+
   function fechar() {
     setOpen(false);
     // volta pro mes atual da proxima vez que abrir
     setMes(mesInicial);
     setLancamentosState(lancamentos);
     setPropostasState(propostas);
+    setRecorrentesState(recorrentes);
   }
 
   return (
@@ -171,15 +181,29 @@ export function ProjecaoDoMesButton({
                   <h3 className="text-sm font-semibold text-foreground">Recorrências ativas</h3>
                   <Money value={totalRecorrentes} className="text-sm font-semibold text-foreground" />
                 </div>
-                <p className="mb-2 text-xs text-muted">Sempre mostra os clientes recorrentes ativos agora, independente do mês selecionado acima.</p>
-                {recorrentes.length === 0 ? (
+                <p className="mb-2 text-xs text-muted">
+                  Sempre mostra os clientes recorrentes ativos agora. O status abaixo é por mês — só um controle visual seu, não afeta nenhum total.
+                </p>
+                {recorrentesState.length === 0 ? (
                   <p className="text-sm text-muted">Nenhum cliente recorrente ativo.</p>
                 ) : (
                   <div className="flex flex-col gap-1.5">
-                    {recorrentes.map((r) => (
+                    {recorrentesState.map((r) => (
                       <div key={r.id} className="flex items-center justify-between gap-2 text-sm">
-                        <span className="min-w-0 truncate text-foreground">{r.nome}</span>
+                        <span className="min-w-0 flex-1 truncate text-foreground">{r.nome}</span>
                         <Money value={r.valorMensal} className="shrink-0 text-muted" />
+                        <select
+                          value={r.pago ? "pago" : "nao_pago"}
+                          onChange={(e) => handleRecorrentePagoChange(r.id, e.target.value === "pago")}
+                          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium ${
+                            r.pago
+                              ? "border-success/30 bg-success/15 text-success"
+                              : "border-border bg-surface-hover text-muted"
+                          }`}
+                        >
+                          <option value="nao_pago">Não pago</option>
+                          <option value="pago">Pago</option>
+                        </select>
                       </div>
                     ))}
                   </div>

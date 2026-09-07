@@ -59,6 +59,7 @@ export default async function Home() {
     lancamentosReceitaMes,
     propostasAprovadasList,
     recorrentesAtivosList,
+    recorrentesPagoMesAtual,
   ] = await Promise.all([
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, status: "PAGO" },
@@ -100,6 +101,7 @@ export default async function Home() {
       select: { id: true, nome: true, valorMensal: true },
       orderBy: { valorMensal: "desc" },
     }),
+    prisma.recorrentePagoMes.findMany({ where: { mes: mesAtualStr } }),
   ]);
 
   const receita = lancamentosMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0);
@@ -124,10 +126,12 @@ export default async function Home() {
     valor: Number(p.valor ?? 0),
     pagoManual: p.pagoManual,
   }));
+  const recorrentesPagoMap = new Map(recorrentesPagoMesAtual.map((p) => [p.clienteRecorrenteId, p.pago]));
   const recorrentesAtivosSerializado = recorrentesAtivosList.map((r) => ({
     id: r.id,
     nome: r.nome,
     valorMensal: Number(r.valorMensal ?? 0),
+    pago: recorrentesPagoMap.get(r.id) ?? false,
   }));
 
   const metaMensal = config.metaMensal ? Number(config.metaMensal) : null;

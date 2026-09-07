@@ -11,13 +11,22 @@ export async function updatePropostaPagoManual(propostaId: string, pago: boolean
   revalidatePath("/");
 }
 
+export async function updateRecorrentePagoMes(clienteRecorrenteId: string, mes: string, pago: boolean) {
+  await prisma.recorrentePagoMes.upsert({
+    where: { clienteRecorrenteId_mes: { clienteRecorrenteId, mes } },
+    create: { clienteRecorrenteId, mes, pago },
+    update: { pago },
+  });
+  revalidatePath("/");
+}
+
 export async function getProjecaoDoMesDetalhes(mes: string) {
   // mes no formato "YYYY-MM"
   const [ano, mesNum] = mes.split("-").map(Number);
   const inicioMes = new Date(ano, mesNum - 1, 1);
   const fimMes = new Date(ano, mesNum, 1);
 
-  const [lancamentosRaw, propostasRaw] = await Promise.all([
+  const [lancamentosRaw, propostasRaw, recorrentesRaw, pagosMesRaw] = await Promise.all([
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
       select: { id: true, descricao: true, valor: true, status: true, vencimento: true },
@@ -28,7 +37,15 @@ export async function getProjecaoDoMesDetalhes(mes: string) {
       select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true, pagoManual: true },
       orderBy: { valor: "desc" },
     }),
+    prisma.clienteRecorrente.findMany({
+      where: { status: "ATIVO", recorrente: true },
+      select: { id: true, nome: true, valorMensal: true },
+      orderBy: { valorMensal: "desc" },
+    }),
+    prisma.recorrentePagoMes.findMany({ where: { mes } }),
   ]);
+
+  const pagoMap = new Map(pagosMesRaw.map((p) => [p.clienteRecorrenteId, p.pago]));
 
   return {
     lancamentos: lancamentosRaw.map((l) => ({
@@ -44,6 +61,12 @@ export async function getProjecaoDoMesDetalhes(mes: string) {
       cliente: p.nomeEmpresa ?? p.nomeCliente ?? "",
       valor: Number(p.valor ?? 0),
       pagoManual: p.pagoManual,
+    })),
+    recorrentes: recorrentesRaw.map((r) => ({
+      id: r.id,
+      nome: r.nome,
+      valorMensal: Number(r.valorMensal ?? 0),
+      pago: pagoMap.get(r.id) ?? false,
     })),
   };
 }

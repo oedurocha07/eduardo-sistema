@@ -460,6 +460,18 @@ model ClienteRecorrente {
   lancamentos  Lancamento[]
   propostas    Proposta[]
   orcamentos   Orcamento[]
+  pagosMensais RecorrentePagoMes[]
+}
+
+model RecorrentePagoMes {
+  id                   String            @id @default(cuid())
+  clienteRecorrenteId  String
+  clienteRecorrente    ClienteRecorrente @relation(fields: [clienteRecorrenteId], references: [id], onDelete: Cascade)
+  mes                  String
+  pago                 Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+
+  @@unique([clienteRecorrenteId, mes])
 }
 
 model ItemLocado {
