@@ -22,8 +22,13 @@ export default async function ProjetosPage({
 }) {
   const { view: viewRaw, data: dataRaw, arquivados } = await searchParams;
   const view: View = viewRaw === "semana" || viewRaw === "lista" ? viewRaw : "pipeline";
-  const hoje = new Date();
-  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00`) : hoje;
+  // Projeto.dataEntrega e Tarefa.prazo vêm de <input type="date"> — literais, sem
+  // componente de hora, gravadas forçadas em UTC (string "YYYY-MM-DD" já vira meia-noite
+  // UTC por padrão do ECMAScript). "hoje" e "ref" precisam ficar ancorados em UTC pra
+  // comparar/exibir corretamente, senão o dia da semana e o número do dia saem errados.
+  const agora = new Date();
+  const hoje = new Date(Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate()));
+  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00Z`) : hoje;
   const mostrarArquivados = arquivados === "1";
 
   const [clientes, projetos] = await Promise.all([
@@ -39,7 +44,7 @@ export default async function ProjetosPage({
   ]);
 
   const em7dias = new Date(hoje);
-  em7dias.setDate(em7dias.getDate() + 7);
+  em7dias.setUTCDate(em7dias.getUTCDate() + 7);
 
   const ativas = projetos.filter((p) => p.status !== "CONCLUIDA").length;
   const emRevisao = projetos.filter((p) => p.status === "REVISAO").length;
@@ -206,14 +211,14 @@ export default async function ProjetosPage({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
             {Array.from({ length: 7 }).map((_, i) => {
               const dia = new Date(inicio);
-              dia.setDate(dia.getDate() + i);
+              dia.setUTCDate(dia.getUTCDate() + i);
               const doDia = tarefasComPrazo.filter((t) => t.prazo && mesmodia(t.prazo, dia));
               const isHoje = mesmodia(dia, hoje);
               return (
                 <div key={i} className="min-h-[120px]">
                   <div className="mb-2 text-xs text-muted uppercase">
-                    {dia.toLocaleDateString("pt-BR", { weekday: "short" })}{" "}
-                    <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getDate()}</span>
+                    {dia.toLocaleDateString("pt-BR", { weekday: "short", timeZone: "UTC" })}{" "}
+                    <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getUTCDate()}</span>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     {doDia.length === 0 && <p className="text-xs text-muted">Sem ações planejadas</p>}

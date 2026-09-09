@@ -23,17 +23,23 @@ export async function updateRecorrentePagoMes(clienteRecorrenteId: string, mes: 
 export async function getProjecaoDoMesDetalhes(mes: string) {
   // mes no formato "YYYY-MM"
   const [ano, mesNum] = mes.split("-").map(Number);
-  const inicioMes = new Date(ano, mesNum - 1, 1);
-  const fimMes = new Date(ano, mesNum, 1);
+  // Lancamento.vencimento é literal, gravada forçada em UTC (ver parseDataHoraLocal) —
+  // fronteira precisa ser ancorada em UTC. Proposta.enviadaEm já é timestamp real (new
+  // Date() no momento em que é marcada Enviada) — fronteira fica no fuso local do
+  // container, igual qualquer timestamp real.
+  const inicioMesUtc = new Date(Date.UTC(ano, mesNum - 1, 1));
+  const fimMesUtc = new Date(Date.UTC(ano, mesNum, 1));
+  const inicioMesLocal = new Date(ano, mesNum - 1, 1);
+  const fimMesLocal = new Date(ano, mesNum, 1);
 
   const [lancamentosRaw, propostasRaw, recorrentesRaw, pagosMesRaw] = await Promise.all([
     prisma.lancamento.findMany({
-      where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
+      where: { vencimento: { gte: inicioMesUtc, lt: fimMesUtc }, tipo: "RECEITA" },
       select: { id: true, descricao: true, valor: true, status: true, vencimento: true },
       orderBy: { vencimento: "asc" },
     }),
     prisma.proposta.findMany({
-      where: { status: "APROVADA", enviadaEm: { gte: inicioMes, lt: fimMes } },
+      where: { status: "APROVADA", enviadaEm: { gte: inicioMesLocal, lt: fimMesLocal } },
       select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true, pagoManual: true },
       orderBy: { valor: "desc" },
     }),

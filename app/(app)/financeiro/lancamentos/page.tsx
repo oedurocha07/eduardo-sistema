@@ -25,23 +25,26 @@ export default async function LancamentosPage({
   const { tipo, status, mes, bucket } = await searchParams;
   const now = new Date();
 
-  let ref = now;
+  // Datas literais (Lancamento.vencimento) são gravadas "como digitado", forçadas em UTC
+  // (ver parseDataHoraLocal) — independente do fuso do container. Por isso "ref" e toda
+  // fronteira de mês/dia precisam ficar ancoradas em UTC (Date.UTC / getUTC*).
+  let ref = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
   if (mes && /^\d{4}-\d{2}$/.test(mes)) {
     const [ano, mesNum] = mes.split("-").map(Number);
-    ref = new Date(ano, mesNum - 1, 1);
+    ref = new Date(Date.UTC(ano, mesNum - 1, 1));
   }
-  const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
-  const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
+  const inicioMes = ref;
+  const fimMes = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() + 1, 1));
   const mesAnteriorParam = (() => {
     const anterior = proximoRef("mes", ref, -1);
-    return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
+    return `${anterior.getUTCFullYear()}-${String(anterior.getUTCMonth() + 1).padStart(2, "0")}`;
   })();
   const mesSeguinteParam = (() => {
     const seguinte = proximoRef("mes", ref, 1);
-    return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
+    return `${seguinte.getUTCFullYear()}-${String(seguinte.getUTCMonth() + 1).padStart(2, "0")}`;
   })();
-  const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
-  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const estaNoMesAtual = ref.getUTCFullYear() === now.getFullYear() && ref.getUTCMonth() === now.getMonth();
+  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
 
   const paramsExtras = new URLSearchParams();
   if (tipo) paramsExtras.set("tipo", tipo);
@@ -53,17 +56,16 @@ export default async function LancamentosPage({
   if (status === "PAGO" || status === "PENDENTE") where.status = status as StatusLancamento;
   if (bucket === "atrasados" || bucket === "hoje" || bucket === "7dias") {
     where.status = "PENDENTE";
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const hoje = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     if (bucket === "atrasados") {
       where.vencimento = { lt: hoje };
     } else if (bucket === "hoje") {
       const amanha = new Date(hoje);
-      amanha.setDate(amanha.getDate() + 1);
+      amanha.setUTCDate(amanha.getUTCDate() + 1);
       where.vencimento = { gte: hoje, lt: amanha };
     } else {
       const em7dias = new Date(hoje);
-      em7dias.setDate(em7dias.getDate() + 7);
+      em7dias.setUTCDate(em7dias.getUTCDate() + 7);
       where.vencimento = { gte: hoje, lte: em7dias };
     }
   }

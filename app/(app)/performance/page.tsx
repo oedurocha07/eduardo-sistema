@@ -64,8 +64,10 @@ function Barra({ label, valor, max, cor }: { label: React.ReactNode; valor: numb
 
 export default async function PerformancePage() {
   const now = new Date();
-  const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
-  const fimMes = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  // Lancamento.vencimento é gravada "como digitado", forçada em UTC (ver
+  // parseDataHoraLocal) — por isso a fronteira do mês precisa ficar ancorada em UTC.
+  const inicioMes = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+  const fimMes = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
 
   const [lancamentosMes, projetosPorEtapa, clientesAtivos, leads, lancamentosPendentes, config, tarefas] =
     await Promise.all([

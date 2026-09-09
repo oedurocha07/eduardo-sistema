@@ -20,29 +20,34 @@ export default async function FinanceiroPage({
   const { mes } = await searchParams;
   const now = new Date();
 
-  let ref = now;
+  // Datas literais (Lancamento.vencimento etc.) são gravadas "como digitado", forçadas em
+  // UTC (ver parseDataHoraLocal) — independente do fuso do container (America/Sao_Paulo).
+  // Por isso "ref" e toda fronteira de mês precisam ficar ancoradas em UTC (Date.UTC /
+  // getUTC*), senão itens do dia 1º do mês ficam de fora por até 3h. proximoRef (de
+  // agenda/dateUtils) já assume um ref ancorado em UTC.
+  let ref = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
   if (mes && /^\d{4}-\d{2}$/.test(mes)) {
     const [ano, mesNum] = mes.split("-").map(Number);
-    ref = new Date(ano, mesNum - 1, 1);
+    ref = new Date(Date.UTC(ano, mesNum - 1, 1));
   }
 
-  const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
-  const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
-  const mesParam = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, "0")}`;
+  const inicioMes = ref;
+  const fimMes = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() + 1, 1));
+  const mesParam = `${ref.getUTCFullYear()}-${String(ref.getUTCMonth() + 1).padStart(2, "0")}`;
 
   const mesAnteriorParam = (() => {
     const anterior = proximoRef("mes", ref, -1);
-    return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
+    return `${anterior.getUTCFullYear()}-${String(anterior.getUTCMonth() + 1).padStart(2, "0")}`;
   })();
   const mesSeguinteParam = (() => {
     const seguinte = proximoRef("mes", ref, 1);
-    return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
+    return `${seguinte.getUTCFullYear()}-${String(seguinte.getUTCMonth() + 1).padStart(2, "0")}`;
   })();
-  const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();
+  const estaNoMesAtual = ref.getUTCFullYear() === now.getFullYear() && ref.getUTCMonth() === now.getMonth();
 
-  const inicioMesAtual = new Date(now.getFullYear(), now.getMonth(), 1);
-  const fimMesAtual = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const inicioGrafico = new Date(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1);
+  const inicioMesAtual = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+  const fimMesAtual = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
+  const inicioGrafico = new Date(Date.UTC(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1));
 
   const [lancamentosMes, vencimentosPendentes, lancamentosGrafico, clientesRaw, projetosRaw] = await Promise.all([
     prisma.lancamento.findMany({
@@ -65,11 +70,11 @@ export default async function FinanceiroPage({
   const projetos = projetosRaw;
 
   const dadosGrafico = Array.from({ length: MESES_GRAFICO }).map((_, i) => {
-    const mesData = new Date(inicioMesAtual.getFullYear(), inicioMesAtual.getMonth() - (MESES_GRAFICO - 1) + i, 1);
-    const proximoMesData = new Date(mesData.getFullYear(), mesData.getMonth() + 1, 1);
+    const mesData = new Date(Date.UTC(inicioMesAtual.getUTCFullYear(), inicioMesAtual.getUTCMonth() - (MESES_GRAFICO - 1) + i, 1));
+    const proximoMesData = new Date(Date.UTC(mesData.getUTCFullYear(), mesData.getUTCMonth() + 1, 1));
     const doMes = lancamentosGrafico.filter((l) => l.vencimento >= mesData && l.vencimento < proximoMesData);
     return {
-      mes: mesData.toLocaleDateString("pt-BR", { month: "short" }),
+      mes: mesData.toLocaleDateString("pt-BR", { month: "short", timeZone: "UTC" }),
       receita: doMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0),
       despesa: doMes.filter((l) => l.tipo === "DESPESA").reduce((s, l) => s + Number(l.valor), 0),
     };
@@ -101,7 +106,7 @@ export default async function FinanceiroPage({
   const totalDespesas = Object.values(despesasPorCategoria).reduce((s, v) => s + v, 0);
   const categoriasOrdenadas = Object.entries(despesasPorCategoria).sort((a, b) => b[1] - a[1]);
 
-  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const mesLabel = ref.toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
 
   return (
     <div className="p-6 md:p-8">

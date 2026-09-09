@@ -5,7 +5,6 @@ import { PropostaStatusSelect } from "./PropostaStatusSelect";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { Money } from "@/app/components/ui/Money";
-import { proximoRef } from "@/app/(app)/agenda/dateUtils";
 import { FileText, Paperclip, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusProposta } from "@/app/generated/prisma/client";
 
@@ -28,6 +27,10 @@ export default async function PropostasPage({
   const grupo: GrupoStatus = statusRaw === "fechadas" || statusRaw === "perdidas" ? statusRaw : "abertas";
 
   const now = new Date();
+  // Proposta.enviadaEm é um timestamp real (new Date() no momento em que a proposta é
+  // marcada como Enviada, ver actions.ts) — diferente de campos "literais" como
+  // Lancamento.vencimento. Por isso aqui a fronteira do mês fica no fuso local do
+  // container (America/Sao_Paulo), igual a qualquer timestamp real.
   let ref = now;
   if (mes && /^\d{4}-\d{2}$/.test(mes)) {
     const [ano, mesNum] = mes.split("-").map(Number);
@@ -36,11 +39,13 @@ export default async function PropostasPage({
   const inicioMes = new Date(ref.getFullYear(), ref.getMonth(), 1);
   const fimMes = new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
   const mesAnteriorParam = (() => {
-    const anterior = proximoRef("mes", ref, -1);
+    const anterior = new Date(ref);
+    anterior.setMonth(anterior.getMonth() - 1);
     return `${anterior.getFullYear()}-${String(anterior.getMonth() + 1).padStart(2, "0")}`;
   })();
   const mesSeguinteParam = (() => {
-    const seguinte = proximoRef("mes", ref, 1);
+    const seguinte = new Date(ref);
+    seguinte.setMonth(seguinte.getMonth() + 1);
     return `${seguinte.getFullYear()}-${String(seguinte.getMonth() + 1).padStart(2, "0")}`;
   })();
   const estaNoMesAtual = ref.getFullYear() === now.getFullYear() && ref.getMonth() === now.getMonth();

@@ -35,12 +35,22 @@ const MESES_GRAFICO = 6;
 export default async function Home() {
   const usuario = await getCurrentUser();
   const now = new Date();
-  const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
-  const fimMes = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  // Datas literais (Evento.data, Lancamento.vencimento) são gravadas "como digitado",
+  // forçadas em UTC (ver parseDataHoraLocal) — independente do fuso do container
+  // (America/Sao_Paulo). Por isso toda fronteira de dia/mês usada pra comparar com esses
+  // campos precisa ser ancorada em UTC também (Date.UTC), senão itens do dia 1º do mês ou
+  // de "hoje" ficam de fora por até 3h (o bug do "um dia à frente").
+  const inicioMes = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+  const fimMes = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
   const mesAtualStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const inicioGrafico = new Date(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1);
-  const inicioHoje = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const fimHoje = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const inicioGrafico = new Date(Date.UTC(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1), 1));
+  const inicioHoje = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const fimHoje = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+  // Proposta.enviadaEm já é um timestamp real (new Date() no momento em que a proposta é
+  // marcada como Enviada) — não um campo literal. Por isso usa fronteira de mês no fuso
+  // local do container, igual qualquer timestamp real.
+  const inicioMesLocal = new Date(now.getFullYear(), now.getMonth(), 1);
+  const fimMesLocal = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   const [
     lancamentosMes,
@@ -84,7 +94,7 @@ export default async function Home() {
       include: { projeto: { include: { cliente: { include: { empresa: true } } } } },
       orderBy: { prazo: "asc" },
     }),
-    prisma.proposta.aggregate({ where: { status: "APROVADA", enviadaEm: { gte: inicioMes, lt: fimMes } }, _sum: { valor: true } }),
+    prisma.proposta.aggregate({ where: { status: "APROVADA", enviadaEm: { gte: inicioMesLocal, lt: fimMesLocal } }, _sum: { valor: true } }),
     prisma.clienteRecorrente.aggregate({ where: { status: "ATIVO", recorrente: true }, _sum: { valorMensal: true } }),
     prisma.lancamento.findMany({
       where: { vencimento: { gte: inicioMes, lt: fimMes }, tipo: "RECEITA" },
@@ -92,7 +102,7 @@ export default async function Home() {
       orderBy: { vencimento: "asc" },
     }),
     prisma.proposta.findMany({
-      where: { status: "APROVADA", enviadaEm: { gte: inicioMes, lt: fimMes } },
+      where: { status: "APROVADA", enviadaEm: { gte: inicioMesLocal, lt: fimMesLocal } },
       select: { id: true, titulo: true, nomeEmpresa: true, nomeCliente: true, valor: true, pagoManual: true },
       orderBy: { valor: "desc" },
     }),
@@ -146,11 +156,11 @@ export default async function Home() {
   const atalhosFinal = atalhos.length > 0 ? atalhos : (["comercial", "financeiro", "projetos", "performance"] as DashboardModuleKey[]);
 
   const dadosGrafico = Array.from({ length: MESES_GRAFICO }).map((_, i) => {
-    const mesData = new Date(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1) + i, 1);
-    const proximoMes = new Date(mesData.getFullYear(), mesData.getMonth() + 1, 1);
+    const mesData = new Date(Date.UTC(now.getFullYear(), now.getMonth() - (MESES_GRAFICO - 1) + i, 1));
+    const proximoMes = new Date(Date.UTC(mesData.getUTCFullYear(), mesData.getUTCMonth() + 1, 1));
     const doMes = lancamentosGrafico.filter((l) => l.vencimento >= mesData && l.vencimento < proximoMes);
     return {
-      mes: mesData.toLocaleDateString("pt-BR", { month: "short" }),
+      mes: mesData.toLocaleDateString("pt-BR", { month: "short", timeZone: "UTC" }),
       receita: doMes.filter((l) => l.tipo === "RECEITA").reduce((s, l) => s + Number(l.valor), 0),
       despesa: doMes.filter((l) => l.tipo === "DESPESA").reduce((s, l) => s + Number(l.valor), 0),
     };
@@ -401,7 +411,7 @@ export default async function Home() {
                 <CalendarClock size={14} className="shrink-0 text-muted" />
                 <span className="min-w-0 flex-1 truncate text-foreground">{ev.titulo}</span>
                 <span className="shrink-0 text-xs text-muted">
-                  {ev.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  {ev.data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}
                 </span>
               </div>
             ))}

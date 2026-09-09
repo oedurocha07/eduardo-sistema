@@ -16,7 +16,7 @@ export async function MiniCalendar() {
   const diasComEvento = new Set(eventos.map((e) => formatarISODate(e.data)));
 
   const dias: Date[] = [];
-  for (let d = new Date(inicio); d < fim; d.setDate(d.getDate() + 1)) {
+  for (let d = new Date(inicio); d < fim; d.setUTCDate(d.getUTCDate() + 1)) {
     dias.push(new Date(d));
   }
 
@@ -38,7 +38,7 @@ export async function MiniCalendar() {
         ))}
         {dias.map((dia) => {
           const isHoje = mesmodia(dia, hoje);
-          const doMesAtual = dia.getMonth() === hoje.getMonth();
+          const doMesAtual = dia.getUTCMonth() === hoje.getMonth();
           const temEvento = diasComEvento.has(formatarISODate(dia));
           return (
             <Link
@@ -55,7 +55,7 @@ export async function MiniCalendar() {
                       : "text-muted/50"
                 }`}
               >
-                {dia.getDate()}
+                {dia.getUTCDate()}
               </span>
               <span className={`h-1 w-1 rounded-full ${temEvento ? "bg-accent-hover" : "bg-transparent"}`} />
             </Link>

@@ -15,8 +15,12 @@ export default async function AgendaComercialPage({
   searchParams: Promise<{ data?: string }>;
 }) {
   const { data: dataRaw } = await searchParams;
-  const hoje = new Date();
-  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00`) : hoje;
+  // Lead.proximaAcaoEm é literal, gravada forçada em UTC (ver parseDataHoraLocal) —
+  // "hoje" e "ref" precisam ficar ancorados em UTC pra comparar/exibir corretamente,
+  // senão o dia da semana e o número do dia saem errados (um dia a menos).
+  const agora = new Date();
+  const hoje = new Date(Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate()));
+  const ref = dataRaw ? new Date(`${dataRaw}T00:00:00Z`) : hoje;
   const { inicio, fim } = calcularIntervalo("semana", ref);
 
   const leads = await prisma.lead.findMany({
@@ -52,26 +56,26 @@ export default async function AgendaComercialPage({
       />
 
       <p className="mb-4 text-sm text-muted">
-        {inicio.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} —{" "}
-        {fimVisivel.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · {leads.length} ação(ões)
+        {inicio.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} —{" "}
+        {fimVisivel.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} · {leads.length} ação(ões)
       </p>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
         {Array.from({ length: 7 }).map((_, i) => {
           const dia = new Date(inicio);
-          dia.setDate(dia.getDate() + i);
+          dia.setUTCDate(dia.getUTCDate() + i);
           const doDia = leads.filter((l) => l.proximaAcaoEm && mesmodia(l.proximaAcaoEm, dia));
           const isHoje = mesmodia(dia, hoje);
           return (
             <div key={i} className="min-h-[140px]">
               <div className="mb-2 text-xs text-muted uppercase">
-                {DIAS[dia.getDay()].slice(0, 3)}{" "}
-                <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getDate()}</span>
+                {DIAS[dia.getUTCDay()].slice(0, 3)}{" "}
+                <span className={`font-semibold ${isHoje ? "text-accent-hover" : "text-foreground"}`}>{dia.getUTCDate()}</span>
               </div>
               <div className="flex flex-col gap-1.5">
                 {doDia.length === 0 && <p className="text-xs text-muted">—</p>}
                 {doDia.map((l) => {
-                  const atrasado = l.proximaAcaoEm && l.proximaAcaoEm < hoje;
+                  const atrasado = l.proximaAcaoEm && l.proximaAcaoEm < agora;
                   return (
                     <div
                       key={l.id}
